@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sentinela</string>
+    <string name="shortcut_panico_corto">Pánico Sentinela</string>
+    <string name="shortcut_panico_largo">Activar Emergencia Sentinela</string>
+    <string name="canal_emergencia">Emergencia activa</string>
+</resources>

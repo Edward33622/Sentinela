@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Equivalente a NovaShortcuts.swift (AppShortcut "Pánico Sentinela") -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_warning"
+        android:shortcutId="panico_sentinela"
+        android:shortcutLongLabel="@string/shortcut_panico_largo"
+        android:shortcutShortLabel="@string/shortcut_panico_corto">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="sentinela://activate"
+            android:targetClass="com.cibertec.sentinela.views.MainActivity"
+            android:targetPackage="com.cibertec.sentinela" />
+    </shortcut>
+</shortcuts>

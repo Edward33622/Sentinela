@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sentinela_dark_green"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/contenedor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="70dp"
+            android:text="Crea tu nueva cuenta!!"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="241dp"
+            android:layout_height="128dp"
+            android:layout_marginTop="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/registro" />
+
+        <EditText
+            android:id="@+id/nombreView"
+            style="@style/Sentinela.AuthField"
+            android:layout_marginTop="25dp"
+            android:hint="Nombres"
+            android:inputType="textPersonName|textCapWords" />
+
+        <EditText
+            android:id="@+id/correoView"
+            style="@style/Sentinela.AuthField"
+            android:layout_marginTop="11dp"
+            android:hint="Correo"
+            android:inputType="textEmailAddress" />
+
+        <EditText
+            android:id="@+id/telefonoView"
+            style="@style/Sentinela.AuthField"
+            android:layout_marginTop="11dp"
+            android:hint="Teléfono"
+            android:inputType="phone" />
+
+        <EditText
+            android:id="@+id/contraView"
+            style="@style/Sentinela.AuthField"
+            android:layout_marginTop="11dp"
+            android:hint="Contraseña"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/contraConfir"
+            style="@style/Sentinela.AuthField"
+            android:layout_marginTop="11dp"
+            android:hint="Confirmar contraseña"
+            android:inputType="textPassword" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRegistrarse"
+            style="@style/Sentinela.FilledButton"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="26dp"
+            android:layout_marginEnd="30dp"
+            android:text="Registrarse"
+            android:textSize="22sp" />
+
+        <Button
+            android:id="@+id/btnRegresar"
+            style="@style/Sentinela.PlainButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17dp"
+            android:text="Regresar al login"
+            android:textColor="@color/white" />
+    </LinearLayout>
+</ScrollView>
