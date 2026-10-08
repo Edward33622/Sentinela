@@ -11,7 +11,7 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-// Equivalente al modelo Core Data NovaMovil.xcdatamodeld
+// Entidades y DAOs de la base de datos local (Room)
 
 @Entity(tableName = "contactos")
 data class ContactoEntity(
