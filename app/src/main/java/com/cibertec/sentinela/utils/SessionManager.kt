@@ -25,18 +25,6 @@ class SessionManager(context: Context) {
         get() = prefs.getBoolean("locationEnabled", true)
         set(value) = prefs.edit { putBoolean("locationEnabled", value) }
 
-    var recordingEnabled: Boolean
-        get() = prefs.getBoolean("recordingEnabled", true)
-        set(value) = prefs.edit { putBoolean("recordingEnabled", value) }
-
-    var selectedType: String?
-        get() = prefs.getString("selectedType", null)
-        set(value) = prefs.edit { putString("selectedType", value) }
-
-    var selectedTypeDisplay: String?
-        get() = prefs.getString("selectedType_display", null)
-        set(value) = prefs.edit { putString("selectedType_display", value) }
-
     var profileImageFilename: String
         get() = prefs.getString("profileImageFilename", null) ?: "profile.jpg"
         set(value) = prefs.edit { putString("profileImageFilename", value) }
