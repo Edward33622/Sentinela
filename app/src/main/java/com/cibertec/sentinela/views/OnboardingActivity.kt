@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cibertec.sentinela.R
 import com.cibertec.sentinela.databinding.ActivityOnboardingBinding
 import com.cibertec.sentinela.databinding.ItemOnboardingBinding
+import com.cibertec.sentinela.utils.SessionManager
 
 class OnboardingActivity : AppCompatActivity() {
 
@@ -47,9 +48,16 @@ class OnboardingActivity : AppCompatActivity() {
         binding.btnOmitir.setOnClickListener { irALogin() }
     }
 
-    private fun irALogin() = startActivity(Intent(this, LoginActivity::class.java))
+    // Al salir de las tarjetas por cualquier botón ya no se vuelven a mostrar
+    private fun irALogin() {
+        SessionManager(this).onboardingVisto = true
+        startActivity(Intent(this, LoginActivity::class.java))
+    }
 
-    private fun irARegistro() = startActivity(Intent(this, RegisterActivity::class.java))
+    private fun irARegistro() {
+        SessionManager(this).onboardingVisto = true
+        startActivity(Intent(this, RegisterActivity::class.java))
+    }
 
     private inner class OnboardingAdapter : RecyclerView.Adapter<OnboardingAdapter.PaginaViewHolder>() {
 
