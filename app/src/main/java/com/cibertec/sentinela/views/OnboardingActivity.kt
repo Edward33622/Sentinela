@@ -30,9 +30,9 @@ class OnboardingActivity : AppCompatActivity() {
             "Comparte tu ubicación exacta con tus contactos de confianza y autoridades al instante."
         ),
         Pagina(
-            R.drawable.card2,
-            "Evidencia Segura",
-            "Grabación automática de audio y video. Tus pruebas quedan resguardadas en la nube."
+            R.drawable.mapa,
+            "Historial de Emergencias",
+            "Revisa cada alerta que activaste: la fecha, la hora y el recorrido completo en el mapa."
         )
     )
 

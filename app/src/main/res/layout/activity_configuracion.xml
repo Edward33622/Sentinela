@@ -160,7 +160,6 @@
                 app:trackDecorationTint="@android:color/transparent"
                 app:trackTint="@color/switch_track" />
         </LinearLayout>
-
         <!-- Modo Discreto (CU10 / CU14) -->
         <LinearLayout
             android:layout_width="match_parent"
