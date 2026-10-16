@@ -25,6 +25,11 @@ class SessionManager(context: Context) {
         get() = prefs.getBoolean("locationEnabled", true)
         set(value) = prefs.edit { putBoolean("locationEnabled", value) }
 
+    /** true cuando el usuario ya pasó por las tarjetas de bienvenida. No se borra al cerrar sesión. */
+    var onboardingVisto: Boolean
+        get() = prefs.getBoolean("onboardingVisto", false)
+        set(value) = prefs.edit { putBoolean("onboardingVisto", value) }
+
     var profileImageFilename: String
         get() = prefs.getString("profileImageFilename", null) ?: "profile.jpg"
         set(value) = prefs.edit { putString("profileImageFilename", value) }

@@ -19,7 +19,8 @@ class MainActivity : AppCompatActivity() {
         val esAtajoEmergencia = url?.scheme?.lowercase() == "sentinela" &&
                 (host == "activate" || host == "deactivate")
 
-        val token = SessionManager(this).userToken
+        val session = SessionManager(this)
+        val token = session.userToken
         if (!token.isNullOrEmpty()) {
             // Usuario ya logueado -> ir directo al Home
             startActivity(
@@ -27,8 +28,11 @@ class MainActivity : AppCompatActivity() {
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                     .putExtra(HomeActivity.EXTRA_TRIGGER_EMERGENCY, esAtajoEmergencia)
             )
+        } else if (session.onboardingVisto) {
+            // No logueado, pero ya vio las tarjetas -> ir directo al Login
+            startActivity(Intent(this, LoginActivity::class.java))
         } else {
-            // No logueado -> ir al Onboarding/Login
+            // Primera vez que se abre la app -> mostrar las tarjetas de bienvenida
             startActivity(Intent(this, OnboardingActivity::class.java))
         }
         finish()
