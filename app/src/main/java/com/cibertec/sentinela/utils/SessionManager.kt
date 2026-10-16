@@ -37,6 +37,11 @@ class SessionManager(context: Context) {
         get() = prefs.getString("selectedType_display", null)
         set(value) = prefs.edit { putString("selectedType_display", value) }
 
+    /** true cuando el usuario ya pasó por las tarjetas de bienvenida. No se borra al cerrar sesión. */
+    var onboardingVisto: Boolean
+        get() = prefs.getBoolean("onboardingVisto", false)
+        set(value) = prefs.edit { putBoolean("onboardingVisto", value) }
+
     var profileImageFilename: String
         get() = prefs.getString("profileImageFilename", null) ?: "profile.jpg"
         set(value) = prefs.edit { putString("profileImageFilename", value) }
