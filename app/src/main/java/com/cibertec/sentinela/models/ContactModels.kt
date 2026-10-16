@@ -18,7 +18,7 @@ data class CreateContactRequest(
     val enableWhatsapp: Boolean?
 )
 
-/** Contacto leído de la agenda del teléfono (equivalente a CNContact). */
+/** Contacto leído de la agenda del teléfono */
 data class ContactoTelefono(
     val id: String,
     val nombre: String,

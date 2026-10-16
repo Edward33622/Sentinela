@@ -149,23 +149,28 @@ class EmergencyService : Service() {
     private suspend fun activarEmergenciaAPI(location: Location?) {
         val token = session.userToken
         val userId = session.userId
-        if (token == null || userId == 0 || location == null) {
-            Log.e(TAG, "Datos faltantes para API")
+        if (token == null || userId == 0) {
+            Log.e(TAG, "Datos faltantes para API (token o userId)")
             return
         }
 
+        val lat = location?.latitude ?: -12.0464
+        val lon = location?.longitude ?: -77.0428
+
         val request = CreateEmergencyEventRequest(
             userId = userId,
+            status = "ACTIVE",
             type = "TAP",
             description = "Emergencia activada por usuario",
-            latitude = location.latitude,
-            longitude = location.longitude
+            latitude = lat,
+            longitude = lon
         )
 
         realizarPeticion { ApiClient.emergencyEvents.crearEvento(ApiClient.bearer(token), request) }
             .onSuccess { response ->
                 Log.d(TAG, "Evento creado ID: ${response.id}")
-                guardarHistorialLocal(response.id.toLong(), "Pánico", location)
+                val locHistorial = location ?: Location("fallback").apply { latitude = lat; longitude = lon }
+                guardarHistorialLocal(response.id.toLong(), "Pánico", locHistorial)
 
                 // Si el usuario desactivó mientras se creaba el evento, se cierra de inmediato
                 if (!EmergencyManager.isServiceActive.value) {

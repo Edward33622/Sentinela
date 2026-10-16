@@ -25,17 +25,10 @@ class SessionManager(context: Context) {
         get() = prefs.getBoolean("locationEnabled", true)
         set(value) = prefs.edit { putBoolean("locationEnabled", value) }
 
-    var recordingEnabled: Boolean
-        get() = prefs.getBoolean("recordingEnabled", true)
-        set(value) = prefs.edit { putBoolean("recordingEnabled", value) }
-
-    var selectedType: String?
-        get() = prefs.getString("selectedType", null)
-        set(value) = prefs.edit { putString("selectedType", value) }
-
-    var selectedTypeDisplay: String?
-        get() = prefs.getString("selectedType_display", null)
-        set(value) = prefs.edit { putString("selectedType_display", value) }
+    /** true cuando el usuario ya pasó por las tarjetas de bienvenida. No se borra al cerrar sesión. */
+    var onboardingVisto: Boolean
+        get() = prefs.getBoolean("onboardingVisto", false)
+        set(value) = prefs.edit { putBoolean("onboardingVisto", value) }
 
     var profileImageFilename: String
         get() = prefs.getString("profileImageFilename", null) ?: "profile.jpg"
