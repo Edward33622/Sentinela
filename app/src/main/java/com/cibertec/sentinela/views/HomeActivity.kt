@@ -67,6 +67,16 @@ class HomeActivity : AppCompatActivity() {
 
         @Suppress("DEPRECATION")
         usuarioSesion = intent.getSerializableExtra(EXTRA_USUARIO) as? UserDetail
+        if (usuarioSesion == null) {
+            val token = session.userToken
+            val userId = session.userId
+            if (token != null && userId != 0) {
+                lifecycleScope.launch {
+                    realizarPeticion { ApiClient.users.obtenerUsuario(userId, ApiClient.bearer(token)) }
+                        .onSuccess { usuarioSesion = it }
+                }
+            }
+        }
 
         setupMap()
         setupCollectionView()
@@ -243,6 +253,31 @@ class HomeActivity : AppCompatActivity() {
         lifecycleScope.launch {
             contactosGuardados = contactoDao.obtenerTodos()
             contactosAdapter.notifyDataSetChanged()
+
+            // Sincronizar con el backend para que siempre refleje los contactos en el servidor
+            val userId = session.userId
+            val token = session.userToken
+            if (userId != 0 && token != null) {
+                realizarPeticion { ApiClient.contacts.obtenerContactosPorUsuario(userId, ApiClient.bearer(token)) }
+                    .onSuccess { remotos ->
+                        var huboCambios = false
+                        for (r in remotos) {
+                            val tel = r.phoneNumber.orEmpty()
+                            val id = r.id.toString()
+                            if (contactoDao.contar(tel, id) == 0) {
+                                contactoDao.insertar(
+                                    ContactoEntity(id = id, nombre = r.fullName, telefono = tel)
+                                )
+                                huboCambios = true
+                            }
+                        }
+                        if (huboCambios) {
+                            contactosGuardados = contactoDao.obtenerTodos()
+                            contactosAdapter.notifyDataSetChanged()
+                        }
+                    }
+                    .onFailure { Log.w(TAG, "No se pudieron obtener contactos remotos: $it") }
+            }
         }
     }
 
@@ -278,7 +313,11 @@ class HomeActivity : AppCompatActivity() {
                 enableWhatsapp = true
             )
             realizarPeticion { ApiClient.contacts.crearContacto(ApiClient.bearer(token), req) }
-                .onSuccess { Log.d(TAG, "Contacto sincronizado en BD") }
+                .onSuccess {
+                    Log.d(TAG, "Contacto sincronizado en BD con ID: ${it.id}")
+                    // Recargar para sincronizar IDs
+                    cargarContactosLocales()
+                }
                 .onFailure { Log.e(TAG, "Error sincronizando contacto: $it") }
         }
     }
@@ -289,7 +328,7 @@ class HomeActivity : AppCompatActivity() {
             .setMessage("¿Deseas quitar a ${contacto.nombre ?: "este contacto"} de tu red de seguridad?")
             .setPositiveButton("Eliminar") { _, _ ->
                 lifecycleScope.launch {
-                    if (eliminarContactoRemoto(contacto.telefono.orEmpty())) {
+                    if (eliminarContactoRemoto(contacto)) {
                         contactoDao.eliminar(contacto)
                         cargarContactosLocales()
                     } else {
@@ -303,8 +342,8 @@ class HomeActivity : AppCompatActivity() {
             ?.setTextColor(ContextCompat.getColor(this, R.color.system_red))
     }
 
-    /** Busca en el backend el contacto por teléfono y lo elimina por ID. */
-    private suspend fun eliminarContactoRemoto(telefono: String): Boolean {
+    /** Busca en el backend el contacto por ID o por teléfono y lo elimina. */
+    private suspend fun eliminarContactoRemoto(contacto: ContactoEntity): Boolean {
         val userId = session.userId
         val token = session.userToken
         if (userId == 0 || token == null) return false
@@ -313,9 +352,11 @@ class HomeActivity : AppCompatActivity() {
         val contactosBD = realizarPeticion { ApiClient.contacts.obtenerContactosPorUsuario(userId, bearer) }
             .getOrNull() ?: return false
 
+        val telefono = contacto.telefono.orEmpty()
         val objetivo = contactosBD.firstOrNull {
+            it.id.toString() == contacto.id ||
             normalizarNumero(it.phoneNumber.orEmpty()) == normalizarNumero(telefono)
-        } ?: return false
+        } ?: return true // Si ya no existe en el backend, permite limpiar local
 
         return realizarPeticion { ApiClient.contacts.eliminarContacto(objetivo.id, bearer) }
             .getOrNull()?.isSuccessful == true

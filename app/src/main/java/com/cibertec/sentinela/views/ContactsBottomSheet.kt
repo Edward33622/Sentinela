@@ -34,7 +34,8 @@ import kotlinx.coroutines.withContext
  * Hoja "Mis Contactos" (equivalente a ContactsViewController presentado como pageSheet).
  * Devuelve el contacto elegido al Home mediante setFragmentResult.
  */
-class ContactsBottomSheet : BottomSheetDialogFragment() {
+class
+ContactsBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         const val REQUEST_KEY = "contactoSeleccionado"
@@ -63,6 +64,7 @@ class ContactsBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.contactosTable.adapter = adapter
+        binding.btnAgregarManual.setOnClickListener { mostrarDialogoManual() }
         requestContactsAccess()
     }
 
@@ -114,6 +116,73 @@ class ContactsBottomSheet : BottomSheetDialogFragment() {
             ?.setTextColor(ContextCompat.getColor(requireContext(), R.color.sentinela_green))
     }
 
+    private fun mostrarDialogoManual() {
+        val contexto = requireContext()
+        val layout = android.widget.LinearLayout(contexto).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad / 2, pad, 0)
+        }
+
+        val txtNombre = android.widget.EditText(contexto).apply {
+            hint = "Nombre completo"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        }
+        val txtTelefono = android.widget.EditText(contexto).apply {
+            hint = "Teléfono (ej: 987654321)"
+            inputType = android.text.InputType.TYPE_CLASS_PHONE
+        }
+        val txtEmail = android.widget.EditText(contexto).apply {
+            hint = "Correo (opcional)"
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        }
+
+        layout.addView(txtNombre)
+        layout.addView(txtTelefono)
+        layout.addView(txtEmail)
+
+        val dialog = MaterialAlertDialogBuilder(contexto)
+            .setTitle("Agregar Contacto de Confianza")
+            .setMessage("Ingresa los datos para registrarlo en tu red de seguridad:")
+            .setView(layout)
+            .setPositiveButton("Guardar", null)
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).apply {
+                setTextColor(ContextCompat.getColor(contexto, R.color.sentinela_green))
+                setOnClickListener {
+                    val nombre = txtNombre.text.toString().trim()
+                    val telefono = txtTelefono.text.toString().trim()
+                    val email = txtEmail.text.toString().trim().ifEmpty { null }
+
+                    if (nombre.isEmpty()) {
+                        txtNombre.error = "Ingresa el nombre"
+                        return@setOnClickListener
+                    }
+                    if (telefono.isEmpty()) {
+                        txtTelefono.error = "Ingresa el número telefónico"
+                        return@setOnClickListener
+                    }
+
+                    setFragmentResult(
+                        REQUEST_KEY,
+                        bundleOf(
+                            KEY_NOMBRE to nombre,
+                            KEY_TELEFONO to telefono,
+                            KEY_ID to java.util.UUID.randomUUID().toString(),
+                            KEY_EMAIL to email
+                        )
+                    )
+                    dialog.dismiss()
+                    dismiss()
+                }
+            }
+        }
+        dialog.show()
+    }
+
     // MARK: - Acceso a Contactos
 
     private fun requestContactsAccess() {
@@ -129,6 +198,7 @@ class ContactsBottomSheet : BottomSheetDialogFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             contactos = withContext(Dispatchers.IO) { leerContactos(requireContext().applicationContext) }
             adapter.notifyDataSetChanged()
+            binding.lblSinContactos.visibility = if (contactos.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 

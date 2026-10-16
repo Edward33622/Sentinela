@@ -20,6 +20,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.util.Patterns
+import com.cibertec.sentinela.models.UpdateUserRequest
+import com.cibertec.sentinela.utils.ocultarTeclado
+import com.cibertec.sentinela.utils.presentarAlerta
 import java.io.File
 
 class ProfileActivity : AppCompatActivity() {
@@ -50,6 +54,7 @@ class ProfileActivity : AppCompatActivity() {
         usuario?.let {
             binding.nameTextField.setText(it.fullName)
             binding.emailTextField.setText(it.email)
+            binding.phoneTextField.setText(it.phone.orEmpty())
         }
 
         // Tap para cambiar imagen de perfil
@@ -58,6 +63,7 @@ class ProfileActivity : AppCompatActivity() {
         // Cargar imagen guardada localmente si existe
         loadProfileImage()?.let { binding.profileImageView.setImageBitmap(it) }
 
+        binding.btnGuardarPerfil.setOnClickListener { guardarPerfil() }
         binding.btnVerHistorial.setOnClickListener {
             startActivity(Intent(this, EmergencyHistoryActivity::class.java))
         }
@@ -147,7 +153,58 @@ class ProfileActivity : AppCompatActivity() {
                     usuario = detalle
                     binding.nameTextField.setText(detalle.fullName)
                     binding.emailTextField.setText(detalle.email)
+                    binding.phoneTextField.setText(detalle.phone.orEmpty())
                 }
+        }
+    }
+
+    private fun guardarPerfil() {
+        ocultarTeclado()
+
+        val token = session.userToken
+        val userId = session.userId
+        if (token == null || userId == 0) {
+            presentarAlerta("No hay sesión activa")
+            return
+        }
+
+        val nombre = binding.nameTextField.text.toString().trim()
+        val email = binding.emailTextField.text.toString().trim()
+        val telefono = binding.phoneTextField.text.toString().trim()
+
+        if (nombre.isEmpty()) {
+            presentarAlerta("El nombre no puede estar vacío")
+            return
+        }
+
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            presentarAlerta("Ingrese un correo electrónico válido")
+            return
+        }
+
+        if (telefono.isEmpty()) {
+            presentarAlerta("El número de teléfono es obligatorio")
+            return
+        }
+
+        val request = UpdateUserRequest(
+            fullName = nombre,
+            email = email,
+            phone = telefono
+        )
+
+        lifecycleScope.launch {
+            realizarPeticion {
+                ApiClient.users.actualizarUsuario(userId, ApiClient.bearer(token), request)
+            }.onSuccess { detalleActualizado ->
+                usuario = detalleActualizado
+                binding.nameTextField.setText(detalleActualizado.fullName)
+                binding.emailTextField.setText(detalleActualizado.email)
+                binding.phoneTextField.setText(detalleActualizado.phone.orEmpty())
+                presentarAlerta("Perfil actualizado correctamente")
+            }.onFailure { error ->
+                presentarAlerta("Error al actualizar el perfil: ${error.localizedMessage}")
+            }
         }
     }
 }

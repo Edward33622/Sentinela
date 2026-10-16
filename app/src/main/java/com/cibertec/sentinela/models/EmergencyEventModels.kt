@@ -5,10 +5,11 @@ import com.google.gson.annotations.SerializedName
 // Request (lo que se envía)
 data class CreateEmergencyEventRequest(
     val userId: Int,
-    val type: String,
-    val description: String,
-    val latitude: Double,
-    val longitude: Double
+    val status: String = "ACTIVE",
+    val type: String = "TAP",
+    val description: String = "Emergencia activada por usuario",
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
 // Response (lo que se recibe)

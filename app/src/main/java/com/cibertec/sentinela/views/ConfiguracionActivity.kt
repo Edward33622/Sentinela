@@ -51,9 +51,15 @@ class ConfiguracionActivity : AppCompatActivity() {
         session = SessionManager(this)
 
         loadSavedSettings()
-        binding.locationSwitch.setOnCheckedChangeListener(locationSwitchListener)
+        setupSwitches()
 
-        binding.cardPerfil.setOnClickListener { profileTapped() }
+        binding.cardPerfil.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
+
+        binding.cardHistorial.setOnClickListener {
+            startActivity(Intent(this, EmergencyHistoryActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -66,14 +72,25 @@ class ConfiguracionActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    // MARK: - Ajustes guardados
+    // MARK: - Setup Switches
+
+    private fun setupSwitches() {
+        binding.locationSwitch.setOnCheckedChangeListener(locationSwitchListener)
+        binding.discretoSwitch.setOnCheckedChangeListener { _, isOn ->
+            session.modoDiscreto = isOn
+            val msg = if (isOn) "Modo discreto activado (alarma silenciosa)" else "Modo discreto desactivado"
+            showSuccessMessage(msg)
+        }
+    }
 
     private fun loadSavedSettings() {
         binding.locationSwitch.isChecked = session.locationEnabled
+        binding.discretoSwitch.isChecked = session.modoDiscreto
     }
 
     private fun saveSettings() {
         session.locationEnabled = binding.locationSwitch.isChecked
+        session.modoDiscreto = binding.discretoSwitch.isChecked
     }
 
     /** Cambia el switch sin disparar su listener. */
@@ -140,7 +157,6 @@ class ConfiguracionActivity : AppCompatActivity() {
 
     private fun showWarningMessage(message: String) = mostrarMensajeTemporal("⚠️ Advertencia", message, 2000)
 
-    /** Alerta que se cierra sola después de unos segundos. */
     private fun mostrarMensajeTemporal(titulo: String, message: String, duracionMs: Long) {
         if (isFinishing || isDestroyed) return
         val alert = MaterialAlertDialogBuilder(this)
@@ -152,9 +168,5 @@ class ConfiguracionActivity : AppCompatActivity() {
         handler.postDelayed({
             if (alert.isShowing && !isFinishing && !isDestroyed) alert.dismiss()
         }, duracionMs)
-    }
-
-    private fun profileTapped() {
-        startActivity(Intent(this, ProfileActivity::class.java))
     }
 }

@@ -24,12 +24,12 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
-        <!-- Perfil -->
+        <!-- Acceso a Perfil (CU13) -->
         <LinearLayout
             android:id="@+id/cardPerfil"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="28dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
             android:focusable="true"
@@ -49,10 +49,10 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-medium"
-                android:text="Perfil"
+                android:text="Mi Perfil"
                 android:textColor="@color/label"
                 android:textSize="18sp" />
 
@@ -62,11 +62,59 @@
                 android:src="@drawable/ic_chevron_right" />
         </LinearLayout>
 
-        <!-- Ubicación -->
+        <!-- Acceso a Historial de Alertas (CU11) -->
         <LinearLayout
+            android:id="@+id/cardHistorial"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📋"
+                android:textColor="@color/label"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-medium"
+                android:text="Historial de Alertas"
+                android:textColor="@color/label"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_chevron_right" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="28dp"
+            android:text="OPCIONES DE SEGURIDAD"
+            android:textColor="@color/secondary_label"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- Compartir Ubicación GPS en tiempo real (CU08 / CU14) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_card"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -80,21 +128,85 @@
                 android:textColor="@color/label"
                 android:textSize="24sp" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
-                android:fontFamily="sans-serif-medium"
-                android:text="Ubicación"
-                android:textColor="@color/label"
-                android:textSize="18sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Ubicación en tiempo real"
+                    android:textColor="@color/label"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rastreo GPS durante emergencias"
+                    android:textColor="@color/secondary_label"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/locationSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
+                app:thumbTint="@color/white"
+                app:trackDecorationTint="@android:color/transparent"
+                app:trackTint="@color/switch_track" />
+        </LinearLayout>
+
+        <!-- Modo Discreto (CU10 / CU14) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔕"
+                android:textColor="@color/label"
+                android:textSize="24sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Modo discreto (silencioso)"
+                    android:textColor="@color/label"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alerta sin sonido ni alarma acústica"
+                    android:textColor="@color/secondary_label"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/discretoSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
                 app:thumbTint="@color/white"
                 app:trackDecorationTint="@android:color/transparent"
                 app:trackTint="@color/switch_track" />

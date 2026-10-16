@@ -62,6 +62,7 @@ interface EmergencyEventService {
     @PATCH("api/emergency-events/{id}/resolve")
     suspend fun resolverEvento(
         @Path("id") id: Int,
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Body body: Map<String, String> = emptyMap()
     ): EmergencyEventResponse
 }
