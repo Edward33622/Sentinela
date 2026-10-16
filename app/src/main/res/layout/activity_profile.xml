@@ -48,7 +48,7 @@
             android:layout_marginTop="320dp"
             android:layout_marginEnd="30dp"
             android:orientation="vertical"
-            android:paddingBottom="30dp">
+            android:paddingBottom="40dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -65,7 +65,8 @@
                 android:layout_height="49dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_field_white"
-                android:enabled="false"
+                android:enabled="true"
+                android:hint="Ingresa tu nombre completo"
                 android:inputType="textPersonName"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -76,7 +77,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="CORREO ELECTRÓNICO"
                 android:textColor="@color/profile_label"
@@ -88,30 +89,68 @@
                 android:layout_height="49dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_field_white"
-                android:enabled="false"
+                android:enabled="true"
+                android:hint="Ingresa tu correo"
                 android:inputType="textEmailAddress"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:textColor="@color/label"
                 android:textSize="16sp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="TELÉFONO"
+                android:textColor="@color/profile_label"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/phoneTextField"
+                android:layout_width="match_parent"
+                android:layout_height="49dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_field_white"
+                android:enabled="true"
+                android:hint="Ingresa tu teléfono"
+                android:inputType="phone"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/label"
+                android:textSize="16sp" />
+
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnVerHistorial"
+                android:id="@+id/btnGuardarPerfil"
                 style="@style/Sentinela.FilledButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
                 android:fontFamily="sans-serif-medium"
-                android:text="Ver Historial"
+                android:text="Guardar Cambios"
                 android:textSize="17sp"
                 app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnVerHistorial"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Ver Historial de Alertas"
+                android:textColor="@color/sentinela_green"
+                android:textSize="16sp"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/sentinela_green" />
 
             <Button
                 android:id="@+id/btnCerrar"
                 style="@style/Sentinela.PlainButton"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:layout_marginTop="70dp"
+                android:layout_marginTop="32dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="Cerrar Sesión"
                 android:textColor="@color/system_red"

@@ -32,9 +32,9 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun crearConfir() {
-        val nombre = binding.nombreView.text.toString()
-        val email = binding.correoView.text.toString()
-        val telefono = binding.telefonoView.text.toString()
+        val nombre = binding.nombreView.text.toString().trim()
+        val email = binding.correoView.text.toString().trim()
+        val telefono = binding.telefonoView.text.toString().trim()
         val password = binding.contraView.text.toString()
         val confirm = binding.contraConfir.text.toString()
 
@@ -42,6 +42,16 @@ class RegisterActivity : AppCompatActivity() {
             password.isEmpty() || confirm.isEmpty()
         ) {
             presentarAlerta("Complete todos los campos")
+            return
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            presentarAlerta("Ingrese un correo electrónico válido")
+            return
+        }
+
+        if (password.length < 6) {
+            presentarAlerta("La contraseña debe tener al menos 6 caracteres")
             return
         }
 

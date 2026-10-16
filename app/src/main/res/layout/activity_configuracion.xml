@@ -24,12 +24,12 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
-        <!-- Perfil -->
+        <!-- Acceso a Perfil (CU13) -->
         <LinearLayout
             android:id="@+id/cardPerfil"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="28dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
             android:focusable="true"
@@ -49,10 +49,10 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-medium"
-                android:text="Perfil"
+                android:text="Mi Perfil"
                 android:textColor="@color/label"
                 android:textSize="18sp" />
 
@@ -62,11 +62,59 @@
                 android:src="@drawable/ic_chevron_right" />
         </LinearLayout>
 
-        <!-- Ubicación -->
+        <!-- Acceso a Historial de Alertas (CU11) -->
         <LinearLayout
+            android:id="@+id/cardHistorial"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📋"
+                android:textColor="@color/label"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-medium"
+                android:text="Historial de Alertas"
+                android:textColor="@color/label"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_chevron_right" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="28dp"
+            android:text="OPCIONES DE SEGURIDAD"
+            android:textColor="@color/secondary_label"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- Compartir Ubicación GPS en tiempo real (CU08 / CU14) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_card"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -80,15 +128,28 @@
                 android:textColor="@color/label"
                 android:textSize="24sp" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
-                android:fontFamily="sans-serif-medium"
-                android:text="Ubicación"
-                android:textColor="@color/label"
-                android:textSize="18sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Ubicación en tiempo real"
+                    android:textColor="@color/label"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rastreo GPS durante emergencias"
+                    android:textColor="@color/secondary_label"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/locationSwitch"
@@ -100,7 +161,7 @@
                 app:trackTint="@color/switch_track" />
         </LinearLayout>
 
-        <!-- Grabación automática -->
+        <!-- Modo Discreto (CU10 / CU14) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="80dp"
@@ -114,116 +175,41 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎥"
+                android:text="🔕"
                 android:textColor="@color/label"
                 android:textSize="24sp" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
-                android:fontFamily="sans-serif-medium"
-                android:text="Grabación automática"
-                android:textColor="@color/label"
-                android:textSize="18sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Modo discreto (silencioso)"
+                    android:textColor="@color/label"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alerta sin sonido ni alarma acústica"
+                    android:textColor="@color/secondary_label"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/recordingSwitch"
+                android:id="@+id/discretoSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
+                android:checked="false"
                 app:thumbTint="@color/white"
                 app:trackDecorationTint="@android:color/transparent"
                 app:trackTint="@color/switch_track" />
-        </LinearLayout>
-
-        <!-- Desplegable: tipo de evidencia -->
-        <LinearLayout
-            android:id="@+id/dropdownContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingTop="16dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="16dp">
-
-            <FrameLayout
-                android:id="@+id/dropdownButton"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/bg_dropdown"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/dropdownTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fontFamily="sans-serif-medium"
-                    android:gravity="center"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:text="Seleccionar tipo"
-                    android:textColor="@color/label"
-                    android:textSize="16sp" />
-
-                <ImageView
-                    android:id="@+id/dropdownChevron"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center_vertical|end"
-                    android:layout_marginEnd="10dp"
-                    android:src="@drawable/ic_chevron_down" />
-            </FrameLayout>
-
-            <LinearLayout
-                android:id="@+id/dropdownPanel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_dropdown"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/audioOptionButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:fontFamily="sans-serif-medium"
-                    android:gravity="center"
-                    android:text="🎤 Audio"
-                    android:textColor="@color/label"
-                    android:textSize="16sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@color/separator" />
-
-                <TextView
-                    android:id="@+id/photoOptionButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="7dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:fontFamily="sans-serif-medium"
-                    android:gravity="center"
-                    android:text="📸 Foto"
-                    android:textColor="@color/label"
-                    android:textSize="16sp" />
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

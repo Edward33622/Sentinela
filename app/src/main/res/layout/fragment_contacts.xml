@@ -33,11 +33,36 @@
         android:textColor="@color/secondary_label"
         android:textSize="15sp" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAgregarManual"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:text="+ Ingresar contacto manualmente"
+        android:textColor="@color/sentinela_dark_green"
+        app:cornerRadius="10dp" />
+
+    <TextView
+        android:id="@+id/lblSinContactos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:gravity="center"
+        android:text="No se encontraron contactos en la agenda.\nPuedes agregarlo manualmente usando el botón superior."
+        android:textColor="@color/secondary_label"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contactosTable"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="12dp"
         android:layout_weight="1"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 </LinearLayout>
