@@ -6,11 +6,21 @@ import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
+
 /** Cliente HTTP compartido (equivalente a URLSession.shared + JSONEncoder/JSONDecoder). */
 object ApiClient {
 
+    private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(25, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
+
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(Conexion.baseURL + "/")
+        .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -20,6 +30,9 @@ object ApiClient {
     val emergencyEvents: EmergencyEventService = retrofit.create(EmergencyEventService::class.java)
     val emergencyLocations: EmergencyLocationService = retrofit.create(EmergencyLocationService::class.java)
     val emergencyMedia: EmergencyMediaService = retrofit.create(EmergencyMediaService::class.java)
+    val ai: AiService = retrofit.create(AiService::class.java)
+    val subscriptions: SubscriptionService = retrofit.create(SubscriptionService::class.java)
+    val family: FamilyService = retrofit.create(FamilyService::class.java)
 
     fun bearer(token: String) = "Bearer $token"
 }

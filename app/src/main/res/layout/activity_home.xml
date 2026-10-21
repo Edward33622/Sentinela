@@ -16,27 +16,277 @@
         android:layout_height="match_parent"
         android:background="@color/map_overlay" />
 
-    <ImageButton
-        android:id="@+id/btnConfiguracion"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_gravity="top|start"
+    <!-- Barra superior de botones -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_circle_white"
-        android:contentDescription="Configuración"
-        android:src="@drawable/ic_settings" />
-
-    <ImageButton
-        android:id="@+id/btnPerfil"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:background="@drawable/bg_circle_white"
-        android:contentDescription="Perfil"
-        android:src="@drawable/ic_person" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btnConfiguracion"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="Configuración"
+            android:src="@drawable/ic_settings" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/btnAsistenteIa"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="Asistente Sentinela IA"
+            android:src="@drawable/ic_sparkle_ai" />
+
+        <ImageButton
+            android:id="@+id/btnTrayectoSeguro"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="Trayecto Seguro"
+            android:src="@drawable/ic_safe_trip" />
+
+        <FrameLayout
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp">
+
+            <ImageButton
+                android:id="@+id/btnHistorial"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle_white"
+                android:contentDescription="Historial de Alertas"
+                android:src="@drawable/ic_history" />
+
+            <TextView
+                android:id="@+id/badgeHistorial"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/bg_circle_red"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/btnPerfil"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="Perfil"
+            android:src="@drawable/ic_person" />
+    </LinearLayout>
+
+    <!-- Card flotante de Estado de Seguridad en tiempo real (Mejora #4) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardEstadoSeguridad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="70dp"
+        app:cardBackgroundColor="#F8FAFC"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="7dp">
+
+            <View
+                android:id="@+id/dotEstadoSeguridad"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/bg_circle_green" />
+
+            <TextView
+                android:id="@+id/lblEstadoSeguridad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Sentinela Activo"
+                android:textColor="#064E3B"
+                android:textSize="12sp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="14dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="#CBD5E1" />
+
+            <TextView
+                android:id="@+id/lblCuotaIa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="🤖 IA: 4/4"
+                android:textColor="#475569"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Banner flotante de Trayecto Seguro activo (CU05) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bannerTrayecto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="118dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="#10B981"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="6dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏱️"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/lblTimerTrayecto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-bold"
+                    android:text="Trayecto: 15:00 restante"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alerta si no confirmas llegada a salvo"
+                    android:textColor="#E0F2FE"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFinalizarTrayecto"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="Llegué"
+                android:textColor="#065F46"
+                android:textSize="12sp"
+                app:backgroundTint="@color/white"
+                app:cornerRadius="18dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Botón flotante para centrar en Mi Ubicación actual -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnMiUbicacion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="326dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Centrar en mi ubicación actual"
+        android:src="@drawable/ic_my_location"
+        app:backgroundTint="@color/white"
+        app:fabCustomSize="48dp"
+        app:maxImageSize="24dp"
+        app:tint="#10B981"
+        app:elevation="4dp" />
+
+    <!-- Botones flotantes de acción rápida: Llamada Falsa y SOS Perú -->
+    <LinearLayout
+        android:id="@+id/panelAccionesRapidas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="266dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFamilia"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:text="👨‍👩‍👧‍👦 Familia"
+            android:textColor="#064E3B"
+            android:textSize="12sp"
+            app:backgroundTint="@color/white"
+            app:cornerRadius="24dp"
+            app:elevation="4dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLlamadaFalsa"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:text="📞 Llamada"
+            android:textColor="#1F2937"
+            android:textSize="12sp"
+            app:backgroundTint="@color/white"
+            app:cornerRadius="24dp"
+            app:elevation="4dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSosCentrales"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:text="🚨 SOS (105)"
+            android:textColor="#DC2626"
+            android:textSize="12sp"
+            app:backgroundTint="@color/white"
+            app:cornerRadius="24dp"
+            app:elevation="4dp" />
+    </LinearLayout>
 
     <!-- Panel inferior -->
     <LinearLayout
