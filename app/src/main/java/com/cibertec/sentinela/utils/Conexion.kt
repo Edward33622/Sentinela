@@ -2,8 +2,10 @@ package com.cibertec.sentinela.utils
 
 object Conexion {
 
-    // API local: 10.0.2.2 es la PC vista desde el emulador de Android.
-    // En un celular real usa la IP de tu PC en la red Wi-Fi (y agrégala en res/xml/network_security_config.xml).
+    // API local (Spring Boot en el puerto 8080):
+    // • Emulador Android: 10.0.2.2 (es la PC vista desde el emulador). Es el valor por defecto del grupo.
+    // • Celular real en el mismo Wi-Fi: usa la IP de tu PC (comando ipconfig) solo en tu copia local,
+    //   sin subir ese cambio a GitHub, porque la IP es distinta en cada PC.
     const val baseURL = "http://10.0.2.2:8080"
 
     object Endpoints {
@@ -29,5 +31,10 @@ object Conexion {
 
         // Emergency Media
         fun emergencyMedia(eventId: Int) = "/api/emergency-events/$eventId/media"
+
+        // Subscriptions
+        const val subscriptionPlans = "/api/subscriptions/plans"
+        const val subscribe = "/api/subscriptions/subscribe"
+        fun userSubscription(userId: Int) = "/api/subscriptions/user/$userId"
     }
 }

@@ -29,25 +29,66 @@ class EmergencyHistoryActivity : AppCompatActivity() {
         binding = ActivityEmergencyHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.btnVolverHistorial.setOnClickListener { finish() }
+        binding.btnRecargarHistorial.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            it.animate().rotationBy(360f).setDuration(500).start()
+            cargarEventos()
+        }
+
         binding.historyTableView.adapter = adapter
         binding.historyTableView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
         cargarEventos()
     }
 
     private fun cargarEventos() {
+        binding.progressBarHistorial.visibility = android.view.View.VISIBLE
+        binding.layoutVacio.visibility = android.view.View.GONE
+        binding.historyTableView.visibility = android.view.View.GONE
+
         val session = SessionManager(this)
         val token = session.userToken
         val userId = session.userId
-        if (token == null || userId == 0) return
 
         lifecycleScope.launch {
-            realizarPeticion {
-                ApiClient.emergencyEvents.obtenerEventosPorUsuarioResumen(userId, ApiClient.bearer(token))
-            }.onSuccess { lista ->
-                eventos = lista
+            var listaServidor: List<EmergencyEventSummary>? = null
+
+            if (token != null && userId != 0) {
+                realizarPeticion {
+                    ApiClient.emergencyEvents.obtenerEventosPorUsuarioResumen(userId, ApiClient.bearer(token))
+                }.onSuccess { lista ->
+                    listaServidor = lista
+                }.onFailure { error ->
+                    Log.w("EmergencyHistory", "Fallo al conectar con API, usando base local: ${error.localizedMessage}")
+                }
+            }
+
+            if (!listaServidor.isNullOrEmpty()) {
+                eventos = listaServidor!!
+            } else {
+                // Fallback a base de datos Room local para ver siempre las alertas incluso offline
+                val locales = com.cibertec.sentinela.data.SentinelaDatabase.get(this@EmergencyHistoryActivity).historialDao().obtenerTodos()
+                eventos = locales.map { local ->
+                    val fechaIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                        .format(java.util.Date(local.fecha ?: System.currentTimeMillis()))
+                    EmergencyEventSummary(
+                        id = local.eventId.toInt(),
+                        userId = userId,
+                        status = local.tipo ?: "ALERTA",
+                        activatedAt = fechaIso,
+                        closedAt = null
+                    )
+                }
+            }
+
+            binding.progressBarHistorial.visibility = android.view.View.GONE
+            if (eventos.isEmpty()) {
+                binding.layoutVacio.visibility = android.view.View.VISIBLE
+                binding.historyTableView.visibility = android.view.View.GONE
+            } else {
+                binding.layoutVacio.visibility = android.view.View.GONE
+                binding.historyTableView.visibility = android.view.View.VISIBLE
                 adapter.notifyDataSetChanged()
-            }.onFailure { error ->
-                Log.e("EmergencyHistory", "Error al cargar eventos: ${error.localizedMessage}")
             }
         }
     }

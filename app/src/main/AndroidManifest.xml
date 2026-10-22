@@ -62,6 +62,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Sentinela.Grouped" />
         <activity
+            android:name=".views.SuscripcionActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sentinela.Grouped" />
+        <activity
             android:name=".views.ProfileActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Sentinela.Green" />
@@ -70,8 +74,18 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Sentinela.History" />
         <activity
+            android:name=".views.FamilyActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".views.EmergencyDetailActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".views.FakeCallActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
 
         <service
             android:name=".emergency.EmergencyService"

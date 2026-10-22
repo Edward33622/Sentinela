@@ -52,6 +52,7 @@ class EmergencyService : Service() {
         private const val TAG = "EmergencyService"
         private const val ACTION_START = "com.cibertec.sentinela.START_EMERGENCY"
         private const val ACTION_STOP = "com.cibertec.sentinela.STOP_EMERGENCY"
+        private const val ACTION_DURESS = "com.cibertec.sentinela.DURESS_EMERGENCY"
         private const val CANAL_ID = "sentinela_emergencia"
         private const val NOTIF_ID = 1
         private const val MIN_SEND_INTERVAL_MS = 10_000L
@@ -63,6 +64,10 @@ class EmergencyService : Service() {
 
         fun detener(context: Context) {
             context.startService(Intent(context, EmergencyService::class.java).setAction(ACTION_STOP))
+        }
+
+        fun activarCoaccion(context: Context) {
+            context.startService(Intent(context, EmergencyService::class.java).setAction(ACTION_DURESS))
         }
     }
 
@@ -103,6 +108,7 @@ class EmergencyService : Service() {
         when (intent?.action) {
             ACTION_START -> iniciarProtocolo()
             ACTION_STOP -> finalizarEmergencia()
+            ACTION_DURESS -> protocoloCoaccion()
             else -> stopSelf()
         }
         return START_NOT_STICKY
@@ -144,6 +150,34 @@ class EmergencyService : Service() {
 
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
+    }
+
+    private fun protocoloCoaccion() {
+        Log.w(TAG, "ALERTA DE COACCIÓN INICIADA - Silenciando alarma y enviando alerta encubierta")
+        detenerAlarmaSistema() // Apagar sonido para engañar al agresor
+        
+        scope.launch {
+            val location = obtenerUbicacion()
+            enviarMensajesWhatsAppCoaccion(location)
+        }
+        // Mantiene el rastreo de ubicación activo en segundo plano silencioso
+    }
+
+    private suspend fun enviarMensajesWhatsAppCoaccion(location: Location?) {
+        val token = session.userToken ?: return
+        val userId = session.userId
+        if (userId == 0) return
+
+        val lat = location?.latitude ?: 0.0
+        val lon = location?.longitude ?: 0.0
+        val link = "https://maps.google.com/?q=$lat,$lon (🚨 ALERTA CRÍTICA: Usuario forzado a desactivar con PIN de coacción. En peligro)"
+
+        try {
+            ApiClient.contacts.enviarAlertaEmergencia(link, userId, ApiClient.bearer(token))
+            Log.d(TAG, "Mensaje de coacción enviado con éxito por WhatsApp")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error enviando alerta de coacción: $e")
+        }
     }
 
     private suspend fun activarEmergenciaAPI(location: Location?) {

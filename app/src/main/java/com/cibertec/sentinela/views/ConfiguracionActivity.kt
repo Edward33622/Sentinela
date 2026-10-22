@@ -60,11 +60,42 @@ class ConfiguracionActivity : AppCompatActivity() {
         binding.cardHistorial.setOnClickListener {
             startActivity(Intent(this, EmergencyHistoryActivity::class.java))
         }
+
+        binding.cardSuscripcion.setOnClickListener {
+            startActivity(Intent(this, SuscripcionActivity::class.java))
+        }
+
+        binding.cardPinReal.setOnClickListener {
+            mostrarDialogoCambiarPin(
+                titulo = "Modificar PIN de Desactivación",
+                mensaje = "Ingresa tu nuevo PIN de 4 dígitos para apagar la alarma:",
+                esCoaccion = false
+            )
+        }
+
+        binding.cardPinCoaccion.setOnClickListener {
+            mostrarDialogoCambiarPin(
+                titulo = "Modificar PIN de Coacción",
+                mensaje = "Ingresa un PIN de 4 dígitos falso que active el rescate silencioso bajo amenaza:",
+                esCoaccion = true
+            )
+        }
     }
 
     override fun onResume() {
         super.onResume()
         updateLocationStatus()
+        actualizarEtiquetasPin()
+        actualizarEtiquetaSuscripcion()
+    }
+
+    private fun actualizarEtiquetaSuscripcion() {
+        val planTexto = when (session.planSuscripcion) {
+            "PRO" -> "Plan Actual: Sentinela Pro ⭐ (Ilimitado)"
+            "FAMILIA" -> "Plan Actual: Sentinela Familia 👨‍👩‍👧 (Total)"
+            else -> "Plan Actual: Sentinela Free (Básico)"
+        }
+        binding.lblEstadoPlan.text = planTexto
     }
 
     override fun onDestroy() {
@@ -81,16 +112,69 @@ class ConfiguracionActivity : AppCompatActivity() {
             val msg = if (isOn) "Modo discreto activado (alarma silenciosa)" else "Modo discreto desactivado"
             showSuccessMessage(msg)
         }
+        binding.shakeSwitch.setOnCheckedChangeListener { _, isOn ->
+            session.shakeEnabled = isOn
+            val msg = if (isOn) "Sensor de sacudida (Shake) activado" else "Sensor de sacudida desactivado"
+            showSuccessMessage(msg)
+        }
     }
 
     private fun loadSavedSettings() {
         binding.locationSwitch.isChecked = session.locationEnabled
         binding.discretoSwitch.isChecked = session.modoDiscreto
+        binding.shakeSwitch.isChecked = session.shakeEnabled
+        actualizarEtiquetasPin()
+    }
+
+    private fun actualizarEtiquetasPin() {
+        binding.lblPinRealResumen.text = "PIN actual configurado: **** (Seguridad)"
+        binding.lblPinCoaccionResumen.text = "PIN de coacción configurado: **** (Rescate encubierto)"
+    }
+
+    private fun mostrarDialogoCambiarPin(titulo: String, mensaje: String, esCoaccion: Boolean) {
+        val input = android.widget.EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            maxLines = 1
+            filters = arrayOf(android.text.InputFilter.LengthFilter(4))
+            hint = "4 dígitos"
+            setPadding(48, 32, 48, 32)
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(titulo)
+            .setMessage(mensaje)
+            .setView(input)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nuevoPin = input.text.toString().trim()
+                if (nuevoPin.length == 4) {
+                    if (esCoaccion) {
+                        if (nuevoPin == session.pinSeguridad) {
+                            showWarningMessage("El PIN de coacción debe ser diferente al PIN normal")
+                            return@setPositiveButton
+                        }
+                        session.pinCoaccion = nuevoPin
+                        showSuccessMessage("PIN de coacción actualizado con éxito")
+                    } else {
+                        if (nuevoPin == session.pinCoaccion) {
+                            showWarningMessage("El PIN normal debe ser diferente al PIN de coacción")
+                            return@setPositiveButton
+                        }
+                        session.pinSeguridad = nuevoPin
+                        showSuccessMessage("PIN de desactivación actualizado")
+                    }
+                    actualizarEtiquetasPin()
+                } else {
+                    showWarningMessage("El PIN debe tener exactamente 4 dígitos")
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun saveSettings() {
         session.locationEnabled = binding.locationSwitch.isChecked
         session.modoDiscreto = binding.discretoSwitch.isChecked
+        session.shakeEnabled = binding.shakeSwitch.isChecked
     }
 
     /** Cambia el switch sin disparar su listener. */
