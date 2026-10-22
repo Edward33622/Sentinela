@@ -25,6 +25,8 @@
     <color name="separator">#4A3C3C43</color>
     <color name="tertiary_fill">#1F767680</color>
     <color name="profile_label">#555555</color>
+    <color name="text_primary">#1F2937</color>
+    <color name="text_secondary">#4B5563</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 </resources>
