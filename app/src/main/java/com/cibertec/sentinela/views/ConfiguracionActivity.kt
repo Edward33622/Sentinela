@@ -114,6 +114,11 @@ class ConfiguracionActivity : AppCompatActivity() {
         }
         binding.shakeSwitch.setOnCheckedChangeListener { _, isOn ->
             session.shakeEnabled = isOn
+            if (isOn) {
+                com.cibertec.sentinela.emergency.ShakeService.iniciar(this)
+            } else {
+                com.cibertec.sentinela.emergency.ShakeService.detener(this)
+            }
             val msg = if (isOn) "Sensor de sacudida (Shake) activado" else "Sensor de sacudida desactivado"
             showSuccessMessage(msg)
         }

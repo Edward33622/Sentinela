@@ -13,9 +13,15 @@ import kotlin.math.sqrt
 class ShakeDetector(private val onShakeListener: () -> Unit) : SensorEventListener {
 
     companion object {
-        private const val SHAKE_THRESHOLD_GRAVITY = 2.7f
-        private const val SHAKE_SLOP_TIME_MS = 500
-        private const val SHAKE_COUNT_RESET_TIME_MS = 3000
+        // Umbral de aceleración en gravedades (g). 3.3f requiere una sacudida
+        // deliberada de la mano, evitando falsos positivos al caminar o correr (CU07).
+        private const val SHAKE_THRESHOLD_GRAVITY = 3.3f
+        // Intervalo mínimo entre sacudidas para capturar el vaivén manual rápido
+        private const val SHAKE_SLOP_TIME_MS = 250
+        // Ventana máxima de 2 segundos para completar la secuencia
+        private const val SHAKE_COUNT_RESET_TIME_MS = 2000
+        // Requiere 3 sacudidas firmes consecutivas
+        private const val REQUIRED_SHAKE_COUNT = 3
     }
 
     private var shakeTimestamp: Long = 0
@@ -59,8 +65,8 @@ class ShakeDetector(private val onShakeListener: () -> Unit) : SensorEventListen
             shakeTimestamp = now
             shakeCount++
 
-            // Requiere 2 sacudidas consecutivas firmes para evitar falsos positivos
-            if (shakeCount >= 2) {
+            // Requiere 3 sacudidas consecutivas firmes para evitar falsos positivos al caminar o correr
+            if (shakeCount >= REQUIRED_SHAKE_COUNT) {
                 shakeCount = 0
                 onShakeListener()
             }

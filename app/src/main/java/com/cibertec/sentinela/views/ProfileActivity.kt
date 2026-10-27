@@ -78,6 +78,10 @@ class ProfileActivity : AppCompatActivity() {
             .setMessage("¿Desea salir de su cuenta?")
             .setNegativeButton("Cancelar", null)
             .setPositiveButton("Salir") { _, _ ->
+                // Detener servicios de emergencia y sacudida
+                com.cibertec.sentinela.emergency.ShakeService.detener(this)
+                com.cibertec.sentinela.emergency.EmergencyService.detener(this)
+
                 // Limpiar datos de usuario
                 session.cerrarSesion()
 
