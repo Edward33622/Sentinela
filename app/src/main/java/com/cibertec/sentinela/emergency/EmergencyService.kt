@@ -168,9 +168,8 @@ class EmergencyService : Service() {
         val userId = session.userId
         if (userId == 0) return
 
-        val lat = location?.latitude ?: 0.0
-        val lon = location?.longitude ?: 0.0
-        val link = "https://maps.google.com/?q=$lat,$lon (🚨 ALERTA CRÍTICA: Usuario forzado a desactivar con PIN de coacción. En peligro)"
+        val link = "🚨 ALERTA CRÍTICA: el usuario fue forzado a desactivar la alarma con el PIN de coacción y está en peligro. " +
+                textoUbicacion(location)
 
         try {
             ApiClient.contacts.enviarAlertaEmergencia(link, userId, ApiClient.bearer(token))
@@ -188,8 +187,9 @@ class EmergencyService : Service() {
             return
         }
 
-        val lat = location?.latitude ?: -12.0464
-        val lon = location?.longitude ?: -77.0428
+        // Sin GPS no se inventan coordenadas: el evento se registra en 0,0 y el mensaje lo indica
+        val lat = location?.latitude ?: 0.0
+        val lon = location?.longitude ?: 0.0
 
         val request = CreateEmergencyEventRequest(
             userId = userId,
@@ -203,7 +203,7 @@ class EmergencyService : Service() {
         realizarPeticion { ApiClient.emergencyEvents.crearEvento(ApiClient.bearer(token), request) }
             .onSuccess { response ->
                 Log.d(TAG, "Evento creado ID: ${response.id}")
-                val locHistorial = location ?: Location("fallback").apply { latitude = lat; longitude = lon }
+                val locHistorial = location ?: Location("sin_gps")
                 guardarHistorialLocal(response.id.toLong(), "Pánico", locHistorial)
 
                 // Si el usuario desactivó mientras se creaba el evento, se cierra de inmediato
@@ -285,9 +285,7 @@ class EmergencyService : Service() {
         val userId = session.userId
         if (userId == 0) return
 
-        val lat = location?.latitude ?: 0.0
-        val lon = location?.longitude ?: 0.0
-        val link = "https://maps.google.com/?q=$lat,$lon"
+        val link = textoUbicacion(location)
 
         // Backend: POST /api/contacts/emergency/alert?location=<link>&userId=<id>
         try {
@@ -303,6 +301,15 @@ class EmergencyService : Service() {
     }
 
     // MARK: - Ubicación
+
+    /** Enlace de Google Maps con la ubicación, o un aviso si no se pudo obtener (nunca coordenadas 0,0). */
+    private fun textoUbicacion(location: Location?): String {
+        return if (location != null) {
+            "https://maps.google.com/?q=${location.latitude},${location.longitude}"
+        } else {
+            "Ubicación no disponible en este momento (sin señal GPS o sin permiso de ubicación)."
+        }
+    }
 
     private fun tienePermisoUbicacion(): Boolean {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
