@@ -10,11 +10,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Capa oscura sobre el mapa (no intercepta toques) -->
+    <!-- Degradado suave superior e inferior para legibilidad de botones (sin opacar el mapa) -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/map_overlay" />
+        android:background="@drawable/bg_map_scrim" />
 
     <!-- Barra superior de botones -->
     <LinearLayout
@@ -215,6 +215,38 @@
                 app:cornerRadius="18dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+
+    <!-- Botón flotante para activar/ocultar Puntos de Ayuda y Zonas de Riesgo (Prevención Activa) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnCapaSeguridad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="438dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Zonas de Riesgo y Comisarías"
+        android:src="@drawable/ic_shield"
+        app:backgroundTint="@color/white"
+        app:fabCustomSize="48dp"
+        app:maxImageSize="24dp"
+        app:tint="#065F46"
+        app:elevation="4dp" />
+
+    <!-- Botón flotante para cambiar estilo de mapa (Modo Diurno / Nocturno Táctico) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnEstiloMapa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="382dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Cambiar estilo de mapa"
+        android:src="@drawable/ic_layers"
+        app:backgroundTint="@color/white"
+        app:fabCustomSize="48dp"
+        app:maxImageSize="24dp"
+        app:tint="#475569"
+        app:elevation="4dp" />
 
     <!-- Botón flotante para centrar en Mi Ubicación actual -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
