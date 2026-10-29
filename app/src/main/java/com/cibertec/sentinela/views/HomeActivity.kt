@@ -148,6 +148,8 @@ class HomeActivity : AppCompatActivity() {
     private var rutaPolylineOverlay: Polyline? = null
     private val rutaMarkers: MutableList<Marker> = mutableListOf()
     private val familyMarkers: MutableList<Marker> = mutableListOf()
+    private var securityOverlayHandles: com.cibertec.sentinela.utils.SecurityOverlayHandles? = null
+    private var capaSeguridadActiva: Boolean = true
     private var rutaPuntosActuales: List<GeoPoint> = emptyList()
     private var timerVerificacion: android.os.CountDownTimer? = null
     private var dialogoVerificacionActivo: androidx.appcompat.app.AlertDialog? = null
@@ -245,7 +247,12 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         handleEmergencyShortcut(intent)
+        if (intent.getBooleanExtra("EXTRA_REASON_SHAKE", false)) {
+            intent.removeExtra("EXTRA_REASON_SHAKE")
+            presentarAlerta("🚨 ¡ALERTA ACTIVADA POR SACUDIDA (Shake Detection)!")
+        }
     }
 
     override fun onResume() {
@@ -253,7 +260,7 @@ class HomeActivity : AppCompatActivity() {
         binding.mapView.onResume()
         locationOverlay?.enableMyLocation()
         if (session.shakeEnabled) {
-            shakeDetector?.start(sensorManager)
+            com.cibertec.sentinela.emergency.ShakeService.iniciar(this)
         }
         actualizarCardEstadoSeguridad()
         actualizarBadgeHistorial()
@@ -261,7 +268,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        shakeDetector?.stop(sensorManager)
         locationOverlay?.disableMyLocation()
         binding.mapView.onPause()
         super.onPause()
@@ -289,17 +295,59 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupMap() {
         binding.mapView.apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
+            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(this, session.mapDarkTheme)
             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             controller.setZoom(16.0)
             controller.setCenter(GeoPoint(-12.0464, -77.0428))
+        }
+
+        binding.btnEstiloMapa.setOnClickListener {
+            session.mapDarkTheme = !session.mapDarkTheme
+            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(binding.mapView, session.mapDarkTheme)
+            binding.mapView.invalidate()
+            val modo = if (session.mapDarkTheme) "🌙 Mapa Nocturno (Táctico)" else "☀️ Mapa Diurno"
+            android.widget.Toast.makeText(this, modo, android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        // Capa de Prevención Activa: Puntos de Ayuda (Comisarías/Serenazgo) y Zonas de Riesgo
+        alternarCapaSeguridad(activar = true)
+
+        binding.btnCapaSeguridad.setOnClickListener {
+            capaSeguridadActiva = !capaSeguridadActiva
+            alternarCapaSeguridad(capaSeguridadActiva)
+            val estado = if (capaSeguridadActiva) "🛡️ Zonas de Riesgo y Comisarías: Visibles" else "🛡️ Capa de Prevención: Oculta"
+            binding.btnCapaSeguridad.imageTintList = android.content.res.ColorStateList.valueOf(
+                if (capaSeguridadActiva) Color.parseColor("#065F46") else Color.parseColor("#94A3B8")
+            )
+            android.widget.Toast.makeText(this, estado, android.widget.Toast.LENGTH_SHORT).show()
         }
 
         if (tienePermisoUbicacion()) {
             mostrarUbicacionDelUsuario()
         } else {
             solicitarPermisosUbicacion()
+        }
+    }
+
+    private fun alternarCapaSeguridad(activar: Boolean) {
+        if (activar) {
+            if (securityOverlayHandles == null) {
+                securityOverlayHandles = com.cibertec.sentinela.utils.SecurityMapManager.cargarCapaSeguridad(
+                    context = this,
+                    mapView = binding.mapView,
+                    onPuntoClick = { punto ->
+                        com.cibertec.sentinela.utils.SecurityMapManager.mostrarDialogoPuntoAyuda(this, punto)
+                    },
+                    onZonaClick = { zona ->
+                        com.cibertec.sentinela.utils.SecurityMapManager.mostrarDialogoZonaRiesgo(this, zona)
+                    }
+                )
+            }
+        } else {
+            securityOverlayHandles?.let {
+                com.cibertec.sentinela.utils.SecurityMapManager.removerCapaSeguridad(binding.mapView, it)
+            }
+            securityOverlayHandles = null
         }
     }
 
@@ -329,9 +377,8 @@ class HomeActivity : AppCompatActivity() {
                 // Agregar fuente de red para fijar ubicación al instante en interiores o emuladores
                 addLocationSource(LocationManager.NETWORK_PROVIDER)
             }
-            val overlay = MyLocationNewOverlay(provider, binding.mapView)
+            val overlay = com.cibertec.sentinela.utils.SentinelaLocationOverlay(this, provider, binding.mapView)
             overlay.enableMyLocation()
-            overlay.setDrawAccuracyEnabled(true)
             overlay.runOnFirstFix {
                 runOnUiThread {
                     overlay.myLocation?.let {
@@ -438,14 +485,8 @@ class HomeActivity : AppCompatActivity() {
     // MARK: - Emergencia
 
     private fun setupShakeDetector() {
-        shakeDetector = com.cibertec.sentinela.emergency.ShakeDetector {
-            if (!EmergencyManager.isServiceActive.value && session.shakeEnabled) {
-                runOnUiThread {
-                    EmergencyManager.isServiceActive.value = true
-                    EmergencyService.iniciar(this)
-                    presentarAlerta("🚨 ¡ALERTA ACTIVADA POR SACUDIDA (Shake Detection)!")
-                }
-            }
+        if (session.shakeEnabled) {
+            com.cibertec.sentinela.emergency.ShakeService.iniciar(this)
         }
     }
 

@@ -35,8 +35,7 @@ class EmergencyDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.mapMapView.apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
+            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(this, SessionManager(this@EmergencyDetailActivity).mapDarkTheme)
             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             controller.setZoom(16.0)
             controller.setCenter(GeoPoint(-12.0464, -77.0428))

@@ -50,6 +50,10 @@ class SessionManager(context: Context) {
         get() = prefs.getBoolean("shakeEnabled", true)
         set(value) = prefs.edit { putBoolean("shakeEnabled", value) }
 
+    var mapDarkTheme: Boolean
+        get() = prefs.getBoolean("mapDarkTheme", false)
+        set(value) = prefs.edit { putBoolean("mapDarkTheme", value) }
+
     /** Plan actual: "FREE", "PRO" o "FAMILIA" */
     var planSuscripcion: String
         get() = prefs.getString("planSuscripcion", "FREE") ?: "FREE"
