@@ -19,7 +19,7 @@
             android:layout_height="50dp"
             android:background="@drawable/bg_circle_avatar"
             android:gravity="center"
-            android:textColor="@color/sentinela_dark_green"
+            android:textColor="@color/text_brand"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -38,7 +38,7 @@
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
                 android:maxLines="1"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
             <TextView
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:maxLines="1"
-                android:textColor="@color/secondary_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -62,5 +62,5 @@
         android:layout_height="1dp"
         android:layout_gravity="bottom"
         android:layout_marginStart="86dp"
-        android:background="@color/system_gray6" />
+        android:background="@color/screen_background" />
 </FrameLayout>

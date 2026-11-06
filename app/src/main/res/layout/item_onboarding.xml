@@ -14,20 +14,22 @@
 
         <ImageView
             android:id="@+id/imgCard"
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:layout_marginTop="100dp"
-            android:scaleType="fitCenter" />
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_marginTop="64dp"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="Ilustración de una función de Sentinela" />
 
         <TextView
             android:id="@+id/lblTitulo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="30dp"
             android:gravity="center"
-            android:textColor="@color/sentinela_dark_green"
+            android:textColor="@color/text_brand"
             android:textSize="28sp" />
 
         <TextView
@@ -38,7 +40,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginEnd="40dp"
             android:gravity="center"
-            android:textColor="@color/secondary_label"
+            android:textColor="@color/text_secondary"
             android:textSize="17sp" />
 
         <!-- Equivalente a UIPageControl -->
@@ -88,7 +90,7 @@
                 android:text="Comienza"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="@dimen/radius_button" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnIniciarSesion"
@@ -97,11 +99,11 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="15dp"
                 android:text="Iniciar sesión"
-                android:textColor="@color/sentinela_dark_green"
+                android:textColor="@color/text_brand"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:backgroundTint="@color/system_gray6"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="@dimen/radius_button" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

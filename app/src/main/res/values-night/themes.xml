@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Sentinela" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/screen_background</item>
+        <item name="android:statusBarColor">@color/screen_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/screen_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="colorSurface">@color/surface_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+    </style>
+    <style name="Theme.Sentinela.Green">
+        <item name="android:statusBarColor">@color/sentinela_dark_green</item>
+        <item name="android:navigationBarColor">@color/sentinela_dark_green</item>
+    </style>
+    <style name="Theme.Sentinela.Grouped">
+        <item name="android:windowBackground">@color/screen_background</item>
+        <item name="android:statusBarColor">@color/screen_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/screen_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+    <style name="Theme.Sentinela.History">
+        <item name="android:windowBackground">@color/sentinela_history_bg</item>
+        <item name="android:statusBarColor">@color/sentinela_history_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/sentinela_history_bg</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

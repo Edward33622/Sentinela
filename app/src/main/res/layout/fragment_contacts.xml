@@ -19,7 +19,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="24dp"
         android:text="Mis Contactos"
-        android:textColor="@color/sentinela_dark_green"
+        android:textColor="@color/text_brand"
         android:textSize="28sp"
         android:textStyle="bold" />
 
@@ -30,7 +30,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="24dp"
         android:text="Selecciona a quién quieres proteger"
-        android:textColor="@color/secondary_label"
+        android:textColor="@color/text_secondary"
         android:textSize="15sp" />
 
     <com.google.android.material.button.MaterialButton
@@ -42,7 +42,7 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="24dp"
         android:text="+ Ingresar contacto manualmente"
-        android:textColor="@color/sentinela_dark_green"
+        android:textColor="@color/text_brand"
         app:cornerRadius="10dp" />
 
     <TextView
@@ -54,7 +54,7 @@
         android:layout_marginEnd="32dp"
         android:gravity="center"
         android:text="No se encontraron contactos en la agenda.\nPuedes agregarlo manualmente usando el botón superior."
-        android:textColor="@color/secondary_label"
+        android:textColor="@color/text_secondary"
         android:textSize="14sp"
         android:visibility="gone" />
 

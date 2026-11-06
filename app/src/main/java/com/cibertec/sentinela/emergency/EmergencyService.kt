@@ -24,6 +24,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.cibertec.sentinela.R
+import com.cibertec.sentinela.data.ContactoEntity
 import com.cibertec.sentinela.data.HistorialEntity
 import com.cibertec.sentinela.data.SentinelaDatabase
 import com.cibertec.sentinela.models.CreateEmergencyEventRequest
@@ -133,6 +134,7 @@ class EmergencyService : Service() {
         scope.launch {
             val location = obtenerUbicacion()
             launch { enviarMensajesWhatsApp(location) }
+            launch { enviarSmsNativoContactos(location) }
             activarEmergenciaAPI(location)
         }
     }
@@ -158,9 +160,112 @@ class EmergencyService : Service() {
         
         scope.launch {
             val location = obtenerUbicacion()
-            enviarMensajesWhatsAppCoaccion(location)
+            launch { enviarMensajesWhatsAppCoaccion(location) }
+            launch { enviarSmsNativoContactos(location, esCoaccion = true) }
         }
         // Mantiene el rastreo de ubicación activo en segundo plano silencioso
+    }
+
+    private fun mostrarToast(mensaje: String) {
+        Handler(Looper.getMainLooper()).post {
+            android.widget.Toast.makeText(applicationContext, mensaje, android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun enviarSmsNativoContactos(location: Location?, esCoaccion: Boolean = false) {
+        val permisoSms = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
+        if (!permisoSms) {
+            Log.w(TAG, "Permiso SEND_SMS no concedido; omitiendo SMS nativo")
+            mostrarToast("⚠️ No se enviaron SMS: Falta conceder permiso de SMS a Sentinela.")
+            return
+        }
+
+        val link = textoUbicacion(location)
+        val mensaje = if (esCoaccion) {
+            "ALERTA CRITICA SENTINELA: Me obligaron a ingresar el PIN de coaccion. Mi ubicacion:\n$link"
+        } else {
+            "ALERTA DE EMERGENCIA SENTINELA: Necesito ayuda urgente. Mi ubicacion en tiempo real:\n$link"
+        }
+
+        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val db = SentinelaDatabase.get(this@EmergencyService)
+                var contactos = db.contactoDao().obtenerTodos()
+
+                // Si la base local está vacía, intentar sincronizar de emergencia con el backend
+                if (contactos.isEmpty()) {
+                    val userId = session.userId
+                    val token = session.userToken
+                    if (userId != 0 && token != null) {
+                        try {
+                            val remotos = ApiClient.contacts.obtenerContactosPorUsuario(userId, ApiClient.bearer(token))
+                            for (r in remotos) {
+                                val tel = r.phoneNumber?.trim().orEmpty()
+                                if (tel.isNotEmpty()) {
+                                    db.contactoDao().insertar(
+                                        ContactoEntity(id = r.id.toString(), nombre = r.fullName ?: "Contacto", telefono = tel)
+                                    )
+                                }
+                            }
+                            contactos = db.contactoDao().obtenerTodos()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error recuperando contactos para SMS: $e")
+                        }
+                    }
+                }
+
+                if (contactos.isEmpty()) {
+                    Log.d(TAG, "Sin contactos locales para SMS nativo")
+                    mostrarToast("⚠️ No hay contactos guardados para enviar la alerta SMS.")
+                    return@launch
+                }
+
+                val smsManager: android.telephony.SmsManager = try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val subId = android.telephony.SubscriptionManager.getDefaultSmsSubscriptionId()
+                        if (subId != android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+                            getSystemService(android.telephony.SmsManager::class.java).createForSubscriptionId(subId)
+                        } else {
+                            getSystemService(android.telephony.SmsManager::class.java)
+                        }
+                    } else {
+                        @Suppress("DEPRECATION")
+                        android.telephony.SmsManager.getDefault()
+                    }
+                } catch (e: Exception) {
+                    @Suppress("DEPRECATION")
+                    android.telephony.SmsManager.getDefault()
+                }
+
+                var enviados = 0
+                val numerosEnviados = mutableListOf<String>()
+                for (c in contactos) {
+                    val telCrudo = c.telefono?.trim() ?: continue
+                    // Limpieza total: quitar espacios, guiones o caracteres extra que rompen el SMS ("+51 939 716 055" -> "+51939716055")
+                    val destino = telCrudo.replace("[^0-9+]".toRegex(), "")
+                    if (destino.isNotEmpty()) {
+                        try {
+                            val partes = smsManager.divideMessage(mensaje)
+                            smsManager.sendMultipartTextMessage(destino, null, partes, null, null)
+                            Log.d(TAG, "SMS nativo de emergencia enviado a: $destino")
+                            enviados++
+                            numerosEnviados.add(destino)
+                        } catch (smsErr: Exception) {
+                            Log.e(TAG, "Fallo al enviar SMS nativo a $destino: $smsErr")
+                        }
+                    }
+                }
+
+                if (enviados > 0) {
+                    mostrarToast("📲 Alerta SMS enviada al número: ${numerosEnviados.joinToString(", ")}")
+                } else {
+                    mostrarToast("⚠️ No se pudo enviar el SMS. Verifica que el chip Bitel tenga saldo y señal.")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error procesando SMS nativo: $e")
+                mostrarToast("⚠️ Error al despachar SMS: ${e.message}")
+            }
+        }
     }
 
     private suspend fun enviarMensajesWhatsAppCoaccion(location: Location?) {
@@ -291,9 +396,10 @@ class EmergencyService : Service() {
         try {
             val response = ApiClient.contacts.enviarAlertaEmergencia(link, userId, ApiClient.bearer(token))
             if (response.isSuccessful) {
-                Log.d(TAG, "Alerta WhatsApp solicitada al backend")
+                Log.d(TAG, "Alerta WhatsApp / SMS enviada con éxito al backend: ${response.body()?.string()}")
             } else {
-                Log.w(TAG, "Respuesta no exitosa al enviar alerta (${response.code()})")
+                val err = response.errorBody()?.string()
+                Log.w(TAG, "Respuesta no exitosa al enviar alerta (${response.code()}): $err")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error enviando alerta: $e")
@@ -320,13 +426,23 @@ class EmergencyService : Service() {
 
     @SuppressLint("MissingPermission")
     private suspend fun obtenerUbicacion(): Location? {
+        EmergencyManager.lastKnownLocation?.let { return it }
+
         if (!tienePermisoUbicacion()) return null
         return try {
-            fusedLocation.lastLocation.await()
-                ?: fusedLocation.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+            val last = fusedLocation.lastLocation.await()
+            if (last != null) {
+                EmergencyManager.lastKnownLocation = last
+                return last
+            }
+            kotlinx.coroutines.withTimeoutOrNull(3000L) {
+                fusedLocation.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+            }?.also {
+                EmergencyManager.lastKnownLocation = it
+            }
         } catch (e: Exception) {
             Log.e(TAG, "No se pudo obtener la ubicación: $e")
-            null
+            EmergencyManager.lastKnownLocation
         }
     }
 

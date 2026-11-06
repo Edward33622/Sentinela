@@ -7,8 +7,14 @@ data class UserDetail(
     val fullName: String,
     val email: String,
     val phone: String?,
-    val status: String?
+    val status: String?,
+    val pinsConfigured: Boolean = false
 ) : Serializable
+
+data class SavePinsRequest(
+    val pinSeguridad: String,
+    val pinCoaccion: String
+)
 
 data class UpdateUserRequest(
     val fullName: String,

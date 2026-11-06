@@ -35,7 +35,8 @@ class EmergencyDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.mapMapView.apply {
-            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(this, SessionManager(this@EmergencyDetailActivity).mapDarkTheme)
+            val session = SessionManager(this@EmergencyDetailActivity)
+            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(this, session.mapDarkThemeFor(this@EmergencyDetailActivity))
             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             controller.setZoom(16.0)
             controller.setCenter(GeoPoint(-12.0464, -77.0428))

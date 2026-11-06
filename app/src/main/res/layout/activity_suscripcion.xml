@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/system_gray6"
+    android:background="@color/screen_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -35,7 +35,7 @@
                 android:layout_marginStart="14dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="Planes Sentinela"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="20sp" />
         </LinearLayout>
 
@@ -59,7 +59,7 @@
                 android:layout_marginTop="8dp"
                 android:fontFamily="sans-serif-bold"
                 android:text="Seguridad a tu Medida"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="24sp" />
 
             <TextView
@@ -68,7 +68,7 @@
                 android:layout_marginTop="4dp"
                 android:gravity="center"
                 android:text="Elige el plan ideal para cuidar tus trayectos y proteger a tus seres queridos."
-                android:textColor="@color/secondary_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -123,7 +123,7 @@
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-bold"
                     android:text="SENTINELA FREE"
-                    android:textColor="@color/label"
+                    android:textColor="@color/text_primary"
                     android:textSize="18sp" />
 
                 <TextView
@@ -132,7 +132,7 @@
                     android:background="@drawable/bg_badge_gray"
                     android:fontFamily="sans-serif-medium"
                     android:text="GRATIS"
-                    android:textColor="@color/secondary_label"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -142,14 +142,14 @@
                 android:layout_marginTop="8dp"
                 android:fontFamily="sans-serif-bold"
                 android:text="S/. 0.00"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="28sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Para siempre • Protección básica"
-                android:textColor="@color/secondary_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
             <View
@@ -230,7 +230,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:text="Alertas solo por WhatsApp"
+                    android:text="Alertas de auxilio por SMS"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -267,7 +267,7 @@
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-bold"
                     android:text="SENTINELA PRO"
-                    android:textColor="@color/sentinela_dark_green"
+                    android:textColor="@color/text_brand"
                     android:textSize="18sp" />
 
                 <TextView
@@ -276,7 +276,7 @@
                     android:background="@drawable/bg_badge_green"
                     android:fontFamily="sans-serif-bold"
                     android:text="⭐ MÁS POPULAR"
-                    android:textColor="@color/sentinela_dark_green"
+                    android:textColor="@color/text_brand"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -287,7 +287,7 @@
                 android:layout_marginTop="8dp"
                 android:fontFamily="sans-serif-bold"
                 android:text="S/. 9.90 / mes"
-                android:textColor="@color/sentinela_dark_green"
+                android:textColor="@color/text_brand"
                 android:textSize="28sp" />
 
             <TextView
@@ -295,7 +295,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Facturado mensualmente • Cancela cuando quieras"
-                android:textColor="@color/secondary_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
             <View
@@ -341,7 +341,7 @@
                     android:layout_marginStart="10dp"
                     android:fontFamily="sans-serif-medium"
                     android:text="Contactos de auxilio ILIMITADOS"
-                    android:textColor="@color/sentinela_dark_green"
+                    android:textColor="@color/text_brand"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -361,7 +361,7 @@
                     android:layout_marginStart="10dp"
                     android:fontFamily="sans-serif-medium"
                     android:text="Gemini AI ILIMITADO (rutas y riesgo)"
-                    android:textColor="@color/sentinela_dark_green"
+                    android:textColor="@color/text_brand"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -379,7 +379,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:text="WhatsApp + SMS de respaldo (Twilio)"
+                    android:text="Alertas automáticas por SMS de auxilio"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -411,7 +411,7 @@
                 android:backgroundTint="@color/sentinela_green"
                 android:fontFamily="sans-serif-bold"
                 android:text="Suscribirme a Sentinela Pro"
-                android:textColor="@color/white" />
+                android:textColor="@color/text_on_accent" />
         </LinearLayout>
 
         <!-- ================= PLAN FAMILIA ================= -->
@@ -436,7 +436,7 @@
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-bold"
                     android:text="SENTINELA FAMILIA"
-                    android:textColor="#B45309"
+                    android:textColor="@color/text_warning"
                     android:textSize="18sp" />
 
                 <TextView
@@ -445,7 +445,7 @@
                     android:background="@drawable/bg_badge_amber"
                     android:fontFamily="sans-serif-bold"
                     android:text="👨‍👩‍👧 PROTECCIÓN TOTAL"
-                    android:textColor="#B45309"
+                    android:textColor="@color/text_warning"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -456,7 +456,7 @@
                 android:layout_marginTop="8dp"
                 android:fontFamily="sans-serif-bold"
                 android:text="S/. 24.90 / mes"
-                android:textColor="#B45309"
+                android:textColor="@color/text_warning"
                 android:textSize="28sp" />
 
             <TextView
@@ -464,7 +464,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Para hasta 5 miembros familiares"
-                android:textColor="@color/secondary_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
             <View
@@ -510,7 +510,7 @@
                     android:layout_marginStart="10dp"
                     android:fontFamily="sans-serif-medium"
                     android:text="Protección para hasta 5 miembros"
-                    android:textColor="#B45309"
+                    android:textColor="@color/text_warning"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -579,7 +579,7 @@
                 android:backgroundTint="#F59E0B"
                 android:fontFamily="sans-serif-bold"
                 android:text="Suscribirme a Sentinela Familia"
-                android:textColor="@color/white" />
+                android:textColor="@color/text_on_accent" />
         </LinearLayout>
 
         <!-- Trust footer -->
@@ -590,7 +590,7 @@
             android:gravity="center"
             android:lineSpacingExtra="4dp"
             android:text="🔒 Pagos seguros y cifrados. Puedes cancelar tu suscripción en cualquier momento desde Google Play o desde tu cuenta de Sentinela sin penalidades."
-            android:textColor="@color/secondary_label"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
     </LinearLayout>

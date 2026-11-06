@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Sentinela" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">@color/sentinela_green</item>
-        <item name="colorOnPrimary">@color/white</item>
+    <style name="Theme.Sentinela" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/sentinela_dark_green</item>
+        <item name="colorOnPrimary">@color/text_on_accent</item>
         <item name="colorSecondary">@color/sentinela_dark_green</item>
-        <item name="android:windowBackground">@color/white</item>
-        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowBackground">@color/screen_background</item>
+        <item name="android:statusBarColor">@color/screen_background</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:navigationBarColor">@color/screen_background</item>
         <item name="android:windowAnimationStyle">@style/Sentinela.WindowAnimation</item>
     </style>
 
@@ -26,9 +27,9 @@
     </style>
 
     <style name="Theme.Sentinela.Grouped">
-        <item name="android:windowBackground">@color/system_gray6</item>
-        <item name="android:statusBarColor">@color/system_gray6</item>
-        <item name="android:navigationBarColor">@color/system_gray6</item>
+        <item name="android:windowBackground">@color/screen_background</item>
+        <item name="android:statusBarColor">@color/screen_background</item>
+        <item name="android:navigationBarColor">@color/screen_background</item>
     </style>
 
     <style name="Theme.Sentinela.History">
@@ -46,13 +47,13 @@
     <!-- Campo de texto translúcido de Login / Registro -->
     <style name="Sentinela.AuthField" parent="">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">45dp</item>
-        <item name="android:layout_marginStart">50dp</item>
-        <item name="android:layout_marginEnd">50dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_marginStart">@dimen/space_lg</item>
+        <item name="android:layout_marginEnd">@dimen/space_lg</item>
         <item name="android:background">@drawable/bg_field_translucent</item>
-        <item name="android:paddingStart">12dp</item>
-        <item name="android:paddingEnd">12dp</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textColorHint">#8C3C3C43</item>
         <item name="android:singleLine">true</item>
@@ -64,8 +65,60 @@
         <item name="android:insetBottom">0dp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0</item>
-        <item name="backgroundTint">@color/sentinela_green</item>
+        <item name="backgroundTint">@color/sentinela_dark_green</item>
         <item name="android:textColor">@color/white</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+    </style>
+
+    <style name="Sentinela.ActionButton" parent="Widget.Material3.Button">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+    </style>
+
+    <style name="Sentinela.DangerActionButton" parent="Sentinela.ActionButton">
+        <item name="backgroundTint">@color/sentinela_emergency</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Sentinela.SuccessActionButton" parent="Sentinela.ActionButton">
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/sentinela_dark_green</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Sentinela.CompactActionButton" parent="Widget.Material3.Button.ElevatedButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">24dp</item>
+    </style>
+
+    <style name="Sentinela.MapCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/surface_secondary</item>
+        <item name="cardCornerRadius">@dimen/radius_card</item>
+        <item name="cardElevation">3dp</item>
+        <item name="strokeColor">@color/outline</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="TextAppearance.Sentinela.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.Sentinela.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_secondary</item>
     </style>
 
     <style name="Sentinela.PlainButton" parent="Widget.Material3.Button.TextButton">

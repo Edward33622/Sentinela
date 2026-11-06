@@ -7,8 +7,8 @@
     android:layout_marginTop="6dp"
     android:layout_marginEnd="14dp"
     android:layout_marginBottom="6dp"
-    app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="@color/surface_primary"
+    app:cardCornerRadius="@dimen/radius_card"
     app:cardElevation="3dp">
 
     <LinearLayout
@@ -29,7 +29,7 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/bg_circle_green"
                 android:gravity="center"
-                android:textColor="@color/white"
+                android:textColor="@color/text_on_accent"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -60,7 +60,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-bold"
-                    android:textColor="#1F2937"
+                    android:textColor="@color/text_primary"
                     android:textSize="16sp" />
 
                 <TextView
@@ -74,7 +74,7 @@
                     android:paddingEnd="6dp"
                     android:paddingBottom="2dp"
                     android:text="👑 Titular"
-                    android:textColor="#B45309"
+                    android:textColor="@color/text_warning"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:fontFamily="sans-serif-medium"
-                android:textColor="#10B981"
+                android:textColor="@color/text_success"
                 android:textSize="13sp" />
 
             <TextView
@@ -94,7 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#6B7280"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -115,7 +115,7 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="4dp"
                 android:text="🔋 100%"
-                android:textColor="#064E3B"
+                android:textColor="@color/text_brand"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
