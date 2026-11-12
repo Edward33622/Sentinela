@@ -6,4 +6,5 @@
     <dimen name="space_xl">32dp</dimen>
     <dimen name="radius_card">18dp</dimen>
     <dimen name="radius_button">16dp</dimen>
+    <dimen name="stroke_hairline">1dp</dimen>
 </resources>

@@ -6,9 +6,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
+import com.cibertec.sentinela.R
 import com.cibertec.sentinela.databinding.ActivityEmergencyHistoryBinding
 import com.cibertec.sentinela.databinding.ItemHistorialBinding
 import com.cibertec.sentinela.models.EmergencyEventSummary
@@ -37,7 +38,6 @@ class EmergencyHistoryActivity : AppCompatActivity() {
         }
 
         binding.historyTableView.adapter = adapter
-        binding.historyTableView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
         cargarEventos()
     }
 
@@ -117,7 +117,14 @@ class EmergencyHistoryActivity : AppCompatActivity() {
             val cerradaTxt = formatearFecha(evt.closedAt.orEmpty(), "dd/MM/yyyy HH:mm")
 
             holder.celda.textLabel.text = creadaTxt.ifEmpty { "—" }
-            holder.celda.detailTextLabel.text = (evt.status ?: "—") + " • " + cerradaTxt.ifEmpty { "—" }
+            // Estado en español dentro de una etiqueta redondeada: verde si terminó, roja si sigue activa
+            val activa = evt.status.equals("ACTIVE", ignoreCase = true)
+            holder.celda.estadoLabel.text = if (activa) "Activa" else "Finalizada"
+            holder.celda.estadoLabel.setBackgroundResource(if (activa) R.drawable.bg_pill_red else R.drawable.bg_pill_green)
+            holder.celda.estadoLabel.setTextColor(
+                ContextCompat.getColor(holder.itemView.context, if (activa) R.color.chip_red_text else R.color.chip_green_text)
+            )
+            holder.celda.detailTextLabel.text = if (activa) "En curso" else "Cerrada: " + cerradaTxt.ifEmpty { "—" }
             holder.celda.root.setOnClickListener { didSelectRow(evt) }
         }
     }

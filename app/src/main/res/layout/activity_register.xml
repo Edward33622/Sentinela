@@ -68,7 +68,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegistrarse"
-            style="@style/Sentinela.FilledButton"
+            style="@style/Sentinela.OnGreenButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginStart="30dp"

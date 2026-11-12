@@ -1,6 +1,7 @@
 package com.cibertec.sentinela.utils
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
 
 import java.text.SimpleDateFormat
@@ -59,6 +60,11 @@ class SessionManager(context: Context) {
     var shakeEnabled: Boolean
         get() = prefs.getBoolean("shakeEnabled", true)
         set(value) = prefs.edit { putBoolean("shakeEnabled", value) }
+
+    /** Tema de la app: MODE_NIGHT_NO (claro), MODE_NIGHT_YES (oscuro) o MODE_NIGHT_FOLLOW_SYSTEM (por defecto). */
+    var themeMode: Int
+        get() = prefs.getInt("themeMode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        set(value) = prefs.edit { putInt("themeMode", value) }
 
     var mapDarkTheme: Boolean
         get() = prefs.getBoolean("mapDarkTheme", false)

@@ -296,6 +296,7 @@ class HomeActivity : AppCompatActivity() {
             actualizarEstadoUbicacion(null)
         }
         actualizarEstadoConectividad()
+        mostrarFotoPerfil()
         if (session.shakeEnabled) {
             com.cibertec.sentinela.emergency.ShakeService.iniciar(this)
         }
@@ -609,8 +610,32 @@ class HomeActivity : AppCompatActivity() {
         presentarAlerta(mensaje)
     }
 
+    /** Muestra en el botón de perfil la foto del usuario (circular) o el ícono por defecto. */
+    private fun mostrarFotoPerfil() {
+        val foto = com.cibertec.sentinela.utils.FotoPerfil.cargar(this, session.userId)
+        if (foto != null) {
+            val circular = androidx.core.graphics.drawable.RoundedBitmapDrawableFactory.create(resources, foto)
+                .apply { isCircular = true }
+            binding.btnPerfil.imageTintList = null
+            binding.btnPerfil.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+            binding.btnPerfil.setPadding(0, 0, 0, 0)
+            binding.btnPerfil.setImageDrawable(circular)
+        } else {
+            binding.btnPerfil.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_brand))
+            binding.btnPerfil.scaleType = android.widget.ImageView.ScaleType.CENTER
+            binding.btnPerfil.setImageResource(R.drawable.ic_person)
+        }
+    }
+
     private fun actualizarEstiloModoDiscreto() {
-        binding.btnModoDiscreto.alpha = if (session.modoDiscreto) 1.0f else 0.5f
+        val activo = session.modoDiscreto
+        val fondo = if (activo) R.color.theme_primary else R.color.chip_green_bg
+        val texto = if (activo) R.color.theme_on_primary else R.color.chip_green_text
+        binding.btnModoDiscreto.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, fondo))
+        binding.btnModoDiscreto.setTextColor(ContextCompat.getColor(this, texto))
+        binding.btnModoDiscreto.strokeColor = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.chip_green_stroke))
+        binding.btnModoDiscreto.strokeWidth = if (activo) 0 else resources.getDimensionPixelSize(R.dimen.stroke_hairline)
+        binding.btnModoDiscreto.text = if (activo) "Discreto activo" else "Modo Discreto"
     }
 
     // MARK: - Emergencia
@@ -1398,11 +1423,27 @@ class HomeActivity : AppCompatActivity() {
         val atajos = listOf("🎓 Cibertec", "🏠 Casa", "💼 Trabajo", "🏬 C. Comercial")
         for (atajo in atajos) {
             val btnChip = com.google.android.material.button.MaterialButton(
-                this, null, com.google.android.material.R.attr.borderlessButtonStyle
+                this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle
             ).apply {
                 text = atajo
-                textSize = 10f
-                setPadding(8, 0, 8, 0)
+                textSize = 11f
+                isAllCaps = false
+                minWidth = 0
+                minimumWidth = 0
+                minHeight = 0
+                minimumHeight = 0
+                insetTop = 0
+                insetBottom = 0
+                val dp = resources.displayMetrics.density
+                setPadding((10 * dp).toInt(), (6 * dp).toInt(), (10 * dp).toInt(), (6 * dp).toInt())
+                cornerRadius = (50 * dp).toInt()
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_bg))
+                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_stroke))
+                setTextColor(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_text))
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { marginEnd = (6 * dp).toInt() }
                 setOnClickListener {
                     val lugar = when (atajo) {
                         "🎓 Cibertec" -> "Instituto Cibertec (Sede Miraflores)"

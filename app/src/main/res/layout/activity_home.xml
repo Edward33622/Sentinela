@@ -505,9 +505,9 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:text="Modo Discreto"
-                android:textColor="@color/text_brand"
+                android:textColor="@color/chip_green_text"
                 android:textSize="17sp"
-                app:backgroundTint="@color/sentinela_mint"
+                app:backgroundTint="@color/chip_green_bg"
                 app:cornerRadius="12dp" />
         </LinearLayout>
     </LinearLayout>

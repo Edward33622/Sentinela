@@ -3,6 +3,7 @@ package com.cibertec.sentinela.views
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -10,6 +11,7 @@ import android.util.Log
 import android.widget.CompoundButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.biometric.BiometricManager
@@ -103,6 +105,13 @@ class ConfiguracionActivity : AppCompatActivity() {
     // MARK: - Setup Switches
 
     private fun setupSwitches() {
+        // Modo oscuro: se marca según el tema que se ve ahora y, al cambiarlo, se aplica a toda la app
+        binding.themeSwitch.isChecked = modoOscuroActivo()
+        binding.themeSwitch.setOnCheckedChangeListener { _, oscuro ->
+            val modo = if (oscuro) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            session.themeMode = modo
+            AppCompatDelegate.setDefaultNightMode(modo)
+        }
         binding.locationSwitch.setOnCheckedChangeListener(locationSwitchListener)
         binding.discretoSwitch.setOnCheckedChangeListener { _, isOn ->
             session.modoDiscreto = isOn
@@ -119,6 +128,11 @@ class ConfiguracionActivity : AppCompatActivity() {
             val msg = if (isOn) "Sensor de sacudida (Shake) activado" else "Sensor de sacudida desactivado"
             showSuccessMessage(msg)
         }
+    }
+
+    private fun modoOscuroActivo(): Boolean {
+        val modo = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return modo == Configuration.UI_MODE_NIGHT_YES
     }
 
     private fun loadSavedSettings() {

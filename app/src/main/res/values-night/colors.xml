@@ -20,4 +20,20 @@
     <color name="system_gray4">#384A40</color>
     <color name="sentinela_surface">#141D19</color>
     <color name="sentinela_border">#384A40</color>
+
+    <color name="theme_primary">#34D399</color>
+    <color name="theme_on_primary">#052E22</color>
+    <color name="theme_primary_container">#1C3A2D</color>
+    <color name="theme_on_primary_container">#A7F3D0</color>
+    <color name="theme_surface_container_low">#111A16</color>
+    <color name="theme_surface_container">#16211C</color>
+    <color name="theme_surface_container_high">#1B2722</color>
+    <color name="theme_surface_container_highest">#22302A</color>
+
+    <color name="chip_green_bg">#1C3A2D</color>
+    <color name="chip_green_text">#A7F3D0</color>
+    <color name="chip_green_stroke">#2A5240</color>
+    <color name="chip_red_bg">#3B1A1A</color>
+    <color name="chip_red_text">#FCA5A5</color>
+    <color name="sentinela_history_bg">#0B1210</color>
 </resources>

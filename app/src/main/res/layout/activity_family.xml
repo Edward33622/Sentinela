@@ -269,6 +269,10 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnUnirmeGrupo"
                             style="@style/Widget.Material3.Button.TonalButton"
+                            android:textColor="@color/chip_green_text"
+                            app:backgroundTint="@color/chip_green_bg"
+                            app:strokeColor="@color/chip_green_stroke"
+                            app:strokeWidth="1dp"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
                             android:layout_marginTop="12dp"

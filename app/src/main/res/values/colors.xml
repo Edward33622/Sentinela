@@ -45,4 +45,21 @@
     <color name="text_secondary">#4B5563</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+
+    <!-- Paleta del tema (tiene su versión en values-night) -->
+    <color name="theme_primary">#064E3B</color>
+    <color name="theme_on_primary">#FFFFFF</color>
+    <color name="theme_primary_container">#D1FAE5</color>
+    <color name="theme_on_primary_container">#064E3B</color>
+    <color name="theme_surface_container_low">#F7FBF9</color>
+    <color name="theme_surface_container">#F1F7F4</color>
+    <color name="theme_surface_container_high">#FFFFFF</color>
+    <color name="theme_surface_container_highest">#E6F0EB</color>
+
+    <!-- Fondos verde claro con esquinas redondeadas para textos y etiquetas -->
+    <color name="chip_green_bg">#E3F5EC</color>
+    <color name="chip_green_text">#065F46</color>
+    <color name="chip_green_stroke">#C6EBD8</color>
+    <color name="chip_red_bg">#FDE2E2</color>
+    <color name="chip_red_text">#991B1B</color>
 </resources>

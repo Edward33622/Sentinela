@@ -45,6 +45,29 @@
         android:textColor="@color/text_brand"
         app:cornerRadius="10dp" />
 
+    <!-- Buscador: filtra la agenda por nombre o por número -->
+    <EditText
+        android:id="@+id/txtBuscarContacto"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_search_field"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="10dp"
+        android:drawableTint="@color/chip_green_text"
+        android:hint="Buscar por nombre o número"
+        android:imeOptions="actionSearch"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:singleLine="true"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_secondary"
+        android:textSize="15sp" />
+
     <TextView
         android:id="@+id/lblSinContactos"
         android:layout_width="match_parent"
@@ -53,7 +76,7 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
         android:gravity="center"
-        android:text="No se encontraron contactos en la agenda.\nPuedes agregarlo manualmente usando el botón superior."
+        android:text="@string/contactos_agenda_vacia"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
         android:visibility="gone" />

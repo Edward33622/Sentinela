@@ -1,9 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Sentinela" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/sentinela_dark_green</item>
-        <item name="colorOnPrimary">@color/text_on_accent</item>
-        <item name="colorSecondary">@color/sentinela_dark_green</item>
+    <!-- Paleta verde común a modo claro y oscuro: evita el lila por defecto de Material 3
+         en diálogos, botones tonales, interruptores y campos de texto -->
+    <style name="Base.Theme.Sentinela" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/theme_primary</item>
+        <item name="colorOnPrimary">@color/theme_on_primary</item>
+        <item name="colorPrimaryContainer">@color/theme_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/theme_on_primary_container</item>
+        <item name="colorSecondary">@color/theme_primary</item>
+        <item name="colorOnSecondary">@color/theme_on_primary</item>
+        <item name="colorSecondaryContainer">@color/theme_primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/theme_on_primary_container</item>
+        <item name="colorTertiary">@color/theme_primary</item>
+        <item name="colorSurface">@color/surface_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorSurfaceContainerLow">@color/theme_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/theme_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/theme_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/theme_surface_container_highest</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Sentinela.Dialog</item>
+        <item name="materialSwitchStyle">@style/Sentinela.Switch</item>
+    </style>
+
+    <!-- Diálogos con esquinas redondeadas y botones verdes -->
+    <style name="ThemeOverlay.Sentinela.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/Sentinela.DialogShape</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Sentinela.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Sentinela.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Sentinela.DialogButton</item>
+    </style>
+
+    <style name="Sentinela.DialogShape" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <style name="Sentinela.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/theme_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="Sentinela.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="thumbTint">@color/white</item>
+        <item name="trackTint">@color/switch_track</item>
+        <item name="trackDecorationTint">@android:color/transparent</item>
+    </style>
+
+    <!-- Texto con fondo verde claro y esquinas redondeadas (títulos de sección, estados, etiquetas) -->
+    <style name="Sentinela.GreenPill" parent="">
+        <item name="android:background">@drawable/bg_pill_green</item>
+        <item name="android:textColor">@color/chip_green_text</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+    </style>
+
+    <style name="Theme.Sentinela" parent="Base.Theme.Sentinela">
         <item name="android:windowBackground">@color/screen_background</item>
         <item name="android:statusBarColor">@color/screen_background</item>
         <item name="android:windowLightStatusBar">true</item>
@@ -69,6 +129,14 @@
         <item name="android:textColor">@color/white</item>
         <item name="android:minHeight">56dp</item>
         <item name="cornerRadius">@dimen/radius_button</item>
+    </style>
+
+    <!-- Botón principal sobre pantallas de fondo verde (login y registro): fondo menta redondeado -->
+    <style name="Sentinela.OnGreenButton" parent="Sentinela.FilledButton">
+        <item name="backgroundTint">@color/sentinela_mint</item>
+        <item name="android:textColor">@color/sentinela_dark_green</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">17sp</item>
     </style>
 
     <style name="Sentinela.ActionButton" parent="Widget.Material3.Button">

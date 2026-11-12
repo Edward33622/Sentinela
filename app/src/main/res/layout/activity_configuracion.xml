@@ -28,7 +28,10 @@
         <LinearLayout
             android:id="@+id/cardPerfil"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="28dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
@@ -67,7 +70,10 @@
         <LinearLayout
             android:id="@+id/cardHistorial"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
@@ -106,7 +112,10 @@
         <LinearLayout
             android:id="@+id/cardSuscripcion"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
@@ -158,7 +167,10 @@
         <LinearLayout
             android:id="@+id/cardTutorialSentinela"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
@@ -207,19 +219,78 @@
         </LinearLayout>
 
         <TextView
-            android:layout_width="match_parent"
+            style="@style/Sentinela.GreenPill"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="28dp"
-            android:text="OPCIONES DE SEGURIDAD"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:text="APARIENCIA" />
+
+        <!-- Modo claro / oscuro de toda la aplicación -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription=""
+                android:src="@drawable/ic_dark_mode"
+                android:tint="@color/text_brand" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Modo oscuro"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Desactívalo para usar el modo claro"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/themeSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/Sentinela.GreenPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="28dp"
+            android:text="OPCIONES DE SEGURIDAD" />
 
         <!-- Compartir Ubicación GPS en tiempo real (CU08 / CU14) -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_card"
             android:gravity="center_vertical"
@@ -269,7 +340,10 @@
         <!-- Modo Discreto (CU10 / CU14) -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:gravity="center_vertical"
@@ -320,7 +394,10 @@
         <!-- Activar por Sacudida (Shake - CU07) -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:gravity="center_vertical"
@@ -372,7 +449,10 @@
         <LinearLayout
             android:id="@+id/cardPinReal"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
@@ -425,7 +505,10 @@
         <LinearLayout
             android:id="@+id/cardPinCoaccion"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_card"
             android:clickable="true"
