@@ -13,6 +13,9 @@ object EmergencyManager {
     @Volatile
     var currentEventId: Int? = null
 
+    @Volatile
+    var lastKnownLocation: android.location.Location? = null
+
     // Vive mientras viva la app: las peticiones de cierre no se cancelan al detener el servicio
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 }

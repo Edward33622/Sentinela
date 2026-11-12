@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="Sentinela"
-            android:textColor="@color/white"
+            android:textColor="@color/text_on_accent"
             android:textSize="25sp"
             android:textStyle="bold" />
 
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:text="Ingrese sus credenciales"
+            android:text="Tu seguridad empieza aquí"
             android:textColor="@color/sentinela_mint"
             android:textSize="17sp" />
 
@@ -56,15 +56,15 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/ingresar"
-            style="@style/Sentinela.FilledButton"
+            style="@style/Sentinela.OnGreenButton"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="56dp"
             android:layout_marginStart="30dp"
             android:layout_marginTop="31dp"
             android:layout_marginEnd="30dp"
             android:text="Ingresar"
-            android:textSize="22sp"
-            app:cornerRadius="16dp" />
+            android:textSize="18sp"
+            app:cornerRadius="@dimen/radius_button" />
 
         <Button
             android:id="@+id/btnRegistrate"
@@ -73,6 +73,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="¿No tienes cuenta? Registrate aquí"
-            android:textColor="@color/white" />
+            android:textColor="@color/text_on_accent" />
     </LinearLayout>
 </ScrollView>

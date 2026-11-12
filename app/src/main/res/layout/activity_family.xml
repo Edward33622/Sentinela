@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
+    android:background="@color/surface_secondary"
     android:orientation="vertical">
 
     <!-- Barra superior -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/white"
+        android:background="@color/surface_primary"
         android:elevation="2dp"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
@@ -23,7 +23,8 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Volver"
             android:rotation="180"
-            android:src="@drawable/ic_chevron_right" />
+            android:src="@drawable/ic_chevron_right"
+                android:tint="@color/text_muted" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,7 +32,7 @@
             android:layout_marginStart="12dp"
             android:fontFamily="sans-serif-bold"
             android:text="Círculo Familiar en Vivo"
-            android:textColor="#1F2937"
+            android:textColor="@color/text_primary"
             android:textSize="20sp" />
 
         <View
@@ -72,13 +73,13 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:layout_width="132dp"
+                    android:layout_height="132dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="10dp"
-                    android:text="👨‍👩‍👧‍👦"
-                    android:textSize="54sp" />
+                    android:contentDescription="Ilustración de protección familiar"
+                    android:src="@drawable/ic_illustration_family" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -87,7 +88,7 @@
                     android:layout_marginTop="8dp"
                     android:fontFamily="sans-serif-bold"
                     android:text="Protección Familiar en Tiempo Real"
-                    android:textColor="#1F2937"
+                    android:textColor="@color/text_primary"
                     android:textSize="19sp" />
 
                 <TextView
@@ -97,7 +98,7 @@
                     android:layout_marginTop="6dp"
                     android:gravity="center"
                     android:text="Conecta hasta 5 celulares con un código privado. Monitorea ubicación en vivo, nivel de batería y recibe alertas de auxilio inmediatas."
-                    android:textColor="#6B7280"
+                    android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
                 <!-- Card 1: Crear nuevo grupo -->
@@ -105,8 +106,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/surface_primary"
+                    app:cardCornerRadius="@dimen/radius_card"
                     app:cardElevation="3dp">
 
                     <LinearLayout
@@ -126,8 +127,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="sans-serif-bold"
-                                android:text="✨ Crear Círculo Familiar"
-                                android:textColor="#064E3B"
+                                android:drawableStart="@drawable/ic_add_circle"
+                                android:drawablePadding="8dp"
+                                android:drawableTint="@color/text_brand"
+                                android:text="Crear Círculo Familiar"
+                                android:textColor="@color/text_brand"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -138,8 +142,8 @@
                                 android:paddingTop="3dp"
                                 android:paddingEnd="8dp"
                                 android:paddingBottom="3dp"
-                                android:text="👑 Plan Familia"
-                                android:textColor="#B45309"
+                                android:text="Plan Familia"
+                                android:textColor="@color/text_warning"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -149,7 +153,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="Si eres el titular del Plan Familia, crea el grupo para obtener tu código de vinculación y compartirlo con tu familia."
-                            android:textColor="#6B7280"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -188,14 +192,14 @@
                     android:layout_marginBottom="16dp"
                     android:fontFamily="sans-serif-medium"
                     android:text="— Ó —"
-                    android:textColor="#9CA3AF" />
+                    android:textColor="@color/text_muted" />
 
                 <!-- Card 2: Unirse a grupo existente -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/surface_primary"
+                    app:cardCornerRadius="@dimen/radius_card"
                     app:cardElevation="3dp">
 
                     <LinearLayout
@@ -215,8 +219,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="sans-serif-bold"
-                                android:text="🔗 Unirme con Código"
-                                android:textColor="#1F2937"
+                                android:drawableStart="@drawable/ic_link"
+                                android:drawablePadding="8dp"
+                                android:drawableTint="@color/text_brand"
+                                android:text="Unirme con Código"
+                                android:textColor="@color/text_primary"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -228,7 +235,7 @@
                                 android:paddingEnd="8dp"
                                 android:paddingBottom="3dp"
                                 android:text="Gratis para miembros"
-                                android:textColor="#064E3B"
+                                android:textColor="@color/text_brand"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -238,7 +245,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="Ingresa el código que te compartió el titular de tu familia (ej. FAM-8492)."
-                            android:textColor="#6B7280"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -262,6 +269,10 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnUnirmeGrupo"
                             style="@style/Widget.Material3.Button.TonalButton"
+                            android:textColor="@color/chip_green_text"
+                            app:backgroundTint="@color/chip_green_bg"
+                            app:strokeColor="@color/chip_green_stroke"
+                            app:strokeWidth="1dp"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
                             android:layout_marginTop="12dp"
@@ -285,8 +296,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="14dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/surface_primary"
+                app:cardCornerRadius="@dimen/radius_card"
                 app:cardElevation="3dp">
 
                 <LinearLayout
@@ -301,7 +312,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-bold"
                         android:text="Familia Martínez"
-                        android:textColor="#064E3B"
+                        android:textColor="@color/text_brand"
                         android:textSize="18sp" />
 
                     <TextView
@@ -309,7 +320,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="Comparte este código para vincular a tus familiares:"
-                        android:textColor="#6B7280"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
                     <!-- Badge de Código de Invitación -->
@@ -329,7 +340,7 @@
                             android:gravity="center"
                             android:letterSpacing="0.1"
                             android:text="FAM-8492"
-                            android:textColor="#064E3B"
+                            android:textColor="@color/text_brand"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
@@ -348,8 +359,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="46dp"
                             android:layout_marginStart="8dp"
-                            android:text="📲 WhatsApp"
-                            app:cornerRadius="12dp" />
+                            android:text="WhatsApp"
+                            app:cornerRadius="@dimen/radius_button"
+                            app:icon="@drawable/ic_whatsapp"
+                            app:iconTint="@color/text_on_accent"
+                            app:iconGravity="textStart" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -371,7 +385,7 @@
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-bold"
                     android:text="Miembros Conectados (2/5)"
-                    android:textColor="#1F2937"
+                    android:textColor="@color/text_primary"
                     android:textSize="15sp" />
 
                 <TextView
@@ -380,7 +394,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif"
                     android:text="● En vivo"
-                    android:textColor="#10B981"
+                    android:textColor="@color/text_success"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -396,7 +410,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="@color/surface_primary"
                 android:elevation="4dp"
                 android:orientation="vertical"
                 android:padding="14dp">
@@ -406,8 +420,11 @@
                     style="@style/Sentinela.FilledButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="📍 Ver Familia en el Mapa"
-                    app:cornerRadius="12dp" />
+                    android:text="Ver Familia en el Mapa"
+                    app:cornerRadius="@dimen/radius_button"
+                    app:icon="@drawable/ic_my_location"
+                    app:iconTint="@color/text_on_accent"
+                    app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSalirGrupo"
@@ -416,7 +433,7 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="4dp"
                     android:text="Salir del Círculo Familiar"
-                    android:textColor="#EF4444"
+                    android:textColor="@color/text_error"
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>

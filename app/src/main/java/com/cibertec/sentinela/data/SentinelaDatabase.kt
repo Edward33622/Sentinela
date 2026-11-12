@@ -40,11 +40,14 @@ interface ContactoDao {
     @Query("SELECT COUNT(*) FROM contactos WHERE telefono = :telefono OR id = :id")
     suspend fun contar(telefono: String, id: String): Int
 
-    @Insert
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
     suspend fun insertar(contacto: ContactoEntity)
 
     @Delete
     suspend fun eliminar(contacto: ContactoEntity)
+
+    @Query("DELETE FROM contactos")
+    suspend fun vaciar()
 }
 
 @Dao

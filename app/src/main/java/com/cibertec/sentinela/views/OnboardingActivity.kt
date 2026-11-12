@@ -16,21 +16,21 @@ class OnboardingActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityOnboardingBinding
 
-    private data class Pagina(val imagen: Int, val titulo: String, val descripcion: String)
+    private data class Pagina(val ilustracion: Int, val titulo: String, val descripcion: String)
 
     private val paginas = listOf(
         Pagina(
-            R.drawable.card1,
+            R.drawable.ic_illustration_protection,
             "Protección Inteligente",
             "Tu seguridad en tus manos. Activa el modo emergencia con un solo gesto o comando de voz."
         ),
         Pagina(
-            R.drawable.card3,
+            R.drawable.ic_illustration_location,
             "Alerta en Tiempo Real",
             "Comparte tu ubicación exacta con tus contactos de confianza y autoridades al instante."
         ),
         Pagina(
-            R.drawable.mapa,
+            R.drawable.ic_illustration_history,
             "Historial de Emergencias",
             "Revisa cada alerta que activaste: la fecha, la hora y el recorrido completo en el mapa."
         )
@@ -42,6 +42,11 @@ class OnboardingActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.viewPager.adapter = OnboardingAdapter()
+        binding.viewPager.setPageTransformer { page, position ->
+            val distancia = kotlin.math.abs(position).coerceIn(0f, 1f)
+            page.alpha = 1f - (distancia * 0.16f)
+            page.translationX = -position * page.width * 0.035f
+        }
         // Sin efecto de rebote, igual que scrollView.bounces = false
         (binding.viewPager.getChildAt(0) as? RecyclerView)?.overScrollMode = View.OVER_SCROLL_NEVER
 
@@ -72,7 +77,7 @@ class OnboardingActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: PaginaViewHolder, position: Int) {
             val pagina = paginas[position]
             with(holder.item) {
-                imgCard.setImageResource(pagina.imagen)
+                imgCard.setImageResource(pagina.ilustracion)
                 lblTitulo.text = pagina.titulo
                 lblDescripcion.text = pagina.descripcion
 

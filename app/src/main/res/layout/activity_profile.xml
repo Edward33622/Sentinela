@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/system_gray6"
+    android:background="@color/screen_background"
     android:fillViewport="true">
 
     <FrameLayout
@@ -22,7 +22,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="60dp"
                 android:text="Mi Perfil"
-                android:textColor="@color/white"
+                android:textColor="@color/text_on_accent"
                 android:textSize="30sp"
                 android:textStyle="bold" />
         </FrameLayout>
@@ -33,13 +33,39 @@
             android:layout_height="140dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="150dp"
-            android:background="@color/white"
+            android:background="@color/surface_primary"
             android:padding="2dp"
             android:scaleType="centerCrop"
             android:src="@drawable/profile"
             app:shapeAppearanceOverlay="@style/Sentinela.Circle"
             app:strokeColor="@color/white"
             app:strokeWidth="4dp" />
+
+        <!-- Indicador de que la foto se puede cambiar -->
+        <ImageView
+            android:id="@+id/btnCambiarFoto"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="246dp"
+            android:background="@drawable/bg_circle_primary"
+            android:contentDescription="Cambiar foto de perfil"
+            android:elevation="4dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_camera"
+            android:translationX="48dp"
+            app:tint="@color/white" />
+
+        <TextView
+            style="@style/Sentinela.GreenPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="294dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="Toca la foto para cambiarla"
+            android:textSize="11sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,7 +82,7 @@
                 android:layout_marginStart="5dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="NOMBRE COMPLETO"
-                android:textColor="@color/profile_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
             <EditText
@@ -70,7 +96,7 @@
                 android:inputType="textPersonName"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
             <TextView
@@ -80,7 +106,7 @@
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="CORREO ELECTRÓNICO"
-                android:textColor="@color/profile_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
             <EditText
@@ -94,7 +120,7 @@
                 android:inputType="textEmailAddress"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
             <TextView
@@ -104,7 +130,7 @@
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="TELÉFONO"
-                android:textColor="@color/profile_label"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
             <EditText
@@ -118,7 +144,7 @@
                 android:inputType="phone"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:textColor="@color/label"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -140,7 +166,7 @@
                 android:layout_marginTop="12dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="Ver Historial de Alertas"
-                android:textColor="@color/sentinela_green"
+                android:textColor="@color/text_success"
                 android:textSize="16sp"
                 app:cornerRadius="12dp"
                 app:strokeColor="@color/sentinela_green" />

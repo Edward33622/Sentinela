@@ -5,7 +5,6 @@ import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cibertec.sentinela.R
@@ -14,6 +13,7 @@ import com.cibertec.sentinela.models.SubscribeRequest
 import com.cibertec.sentinela.services.ApiClient
 import com.cibertec.sentinela.services.realizarPeticion
 import com.cibertec.sentinela.utils.SessionManager
+import com.cibertec.sentinela.utils.SentinelaToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
@@ -232,7 +232,7 @@ class SuscripcionActivity : AppCompatActivity() {
                     realizarPeticion { ApiClient.subscriptions.suscribirse(req) }
                     session.actualizarPlan("FREE")
                     actualizarBotonesSegunPlan()
-                    Toast.makeText(this@SuscripcionActivity, "Has cambiado a Sentinela Free", Toast.LENGTH_SHORT).show()
+                    SentinelaToast.show(this@SuscripcionActivity, "Has cambiado a Sentinela Free", SentinelaToast.Type.SUCCESS)
                 }
             }
             .setNegativeButton("Cancelar", null)

@@ -1,12 +1,32 @@
 package com.cibertec.sentinela.utils
 
+import android.os.Build
+
 object Conexion {
 
-    // API local (Spring Boot en el puerto 8080):
-    // • Emulador Android: 10.0.2.2 (es la PC vista desde el emulador). Es el valor por defecto del grupo.
-    // • Celular real en el mismo Wi-Fi: usa la IP de tu PC (comando ipconfig) solo en tu copia local,
-    //   sin subir ese cambio a GitHub, porque la IP es distinta en cada PC.
-    const val baseURL = "http://10.0.2.2:8080"
+    const val CLOUD_URL = "https://sentinela-api-production-2a30.up.railway.app"
+    const val DEFAULT_PC_IP = "192.168.1.34"
+    const val DEFAULT_PORT = "8080"
+
+    fun esEmulador(): Boolean {
+        return Build.FINGERPRINT.startsWith("generic") ||
+                Build.FINGERPRINT.startsWith("unknown") ||
+                Build.MODEL.contains("google_sdk") ||
+                Build.MODEL.contains("Emulator") ||
+                Build.MODEL.contains("Android SDK") ||
+                Build.BOARD.contains("goldfish") ||
+                Build.BOARD.contains("ranchu") ||
+                Build.PRODUCT.contains("sdk") ||
+                Build.PRODUCT.contains("emulator")
+    }
+
+    var customBaseURL: String? = CLOUD_URL
+
+    val baseURL: String
+        get() {
+            return customBaseURL ?: CLOUD_URL
+        }
+
 
     object Endpoints {
 

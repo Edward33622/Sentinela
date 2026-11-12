@@ -3,6 +3,7 @@ package com.cibertec.sentinela.services
 import com.cibertec.sentinela.models.RegisterRequest
 import com.cibertec.sentinela.models.UpdateUserRequest
 import com.cibertec.sentinela.models.UserDetail
+import com.cibertec.sentinela.models.SavePinsRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -26,5 +27,12 @@ interface UserService {
         @Path("id") id: Int,
         @Header("Authorization") token: String,
         @Body datos: UpdateUserRequest
+    ): UserDetail
+
+    @PUT("api/users/{id}/pins")
+    suspend fun guardarPins(
+        @Path("id") id: Int,
+        @Header("Authorization") token: String,
+        @Body request: SavePinsRequest
     ): UserDetail
 }

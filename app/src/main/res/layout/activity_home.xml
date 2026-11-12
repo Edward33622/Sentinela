@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/surface_primary">
 
     <org.osmdroid.views.MapView
         android:id="@+id/mapView"
@@ -29,11 +29,12 @@
 
         <ImageButton
             android:id="@+id/btnConfiguracion"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@drawable/bg_circle_white"
             android:contentDescription="Configuración"
-            android:src="@drawable/ic_settings" />
+            android:src="@drawable/ic_settings"
+            android:tint="@color/text_brand" />
 
         <View
             android:layout_width="0dp"
@@ -42,8 +43,8 @@
 
         <ImageButton
             android:id="@+id/btnAsistenteIa"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/bg_circle_white"
             android:contentDescription="Asistente Sentinela IA"
@@ -51,22 +52,22 @@
 
         <ImageButton
             android:id="@+id/btnTrayectoSeguro"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/bg_circle_white"
             android:contentDescription="Trayecto Seguro"
             android:src="@drawable/ic_safe_trip" />
 
         <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp">
 
             <ImageButton
                 android:id="@+id/btnHistorial"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/bg_circle_white"
                 android:contentDescription="Historial de Alertas"
                 android:src="@drawable/ic_history" />
@@ -80,7 +81,7 @@
                 android:layout_marginEnd="2dp"
                 android:background="@drawable/bg_circle_red"
                 android:gravity="center"
-                android:textColor="@color/white"
+                android:textColor="@color/text_on_accent"
                 android:textSize="9sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
@@ -88,11 +89,12 @@
 
         <ImageButton
             android:id="@+id/btnPerfil"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@drawable/bg_circle_white"
             android:contentDescription="Perfil"
-            android:src="@drawable/ic_person" />
+            android:src="@drawable/ic_person"
+            android:tint="@color/text_brand" />
     </LinearLayout>
 
     <!-- Card flotante de Estado de Seguridad en tiempo real (Mejora #4) -->
@@ -102,7 +104,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="70dp"
-        app:cardBackgroundColor="#F8FAFC"
+        app:cardBackgroundColor="@color/surface_secondary"
         app:cardCornerRadius="20dp"
         app:cardElevation="6dp">
 
@@ -129,7 +131,7 @@
                 android:layout_marginStart="8dp"
                 android:fontFamily="sans-serif-medium"
                 android:text="Sentinela Activo"
-                android:textColor="#064E3B"
+                android:textColor="@color/text_brand"
                 android:textSize="12sp" />
 
             <View
@@ -137,15 +139,91 @@
                 android:layout_height="14dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:background="#CBD5E1" />
+                android:background="@color/outline" />
 
             <TextView
                 android:id="@+id/lblCuotaIa"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif"
-                android:text="🤖 IA: 4/4"
-                android:textColor="#475569"
+                android:text="IA: 4/4"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardEstadoMapa"
+        style="@style/Sentinela.MapCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="116dp"
+        android:layout_marginEnd="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/lblEstadoGps"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:accessibilityLiveRegion="polite"
+                    android:drawablePadding="6dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:drawableStart="@drawable/ic_my_location"
+                    android:drawableTint="@color/text_brand"
+                    android:text="Buscando ubicación…"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/lblEstadoRed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:accessibilityLiveRegion="polite"
+                    android:text="Comprobando red…"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/lblDestinoMapa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:accessibilityLiveRegion="polite"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Sin trayecto seleccionado"
+                    android:textAppearance="@style/TextAppearance.Sentinela.Body"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/lblEstadoRuta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:accessibilityLiveRegion="polite"
+                android:text="El estado de la ruta aparecerá aquí"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -157,11 +235,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="118dp"
+        android:layout_marginTop="204dp"
         android:layout_marginEnd="16dp"
         android:visibility="gone"
-        app:cardBackgroundColor="#10B981"
-        app:cardCornerRadius="14dp"
+        app:cardBackgroundColor="@color/sentinela_dark_green"
+        app:cardCornerRadius="@dimen/radius_button"
         app:cardElevation="6dp">
 
         <LinearLayout
@@ -171,11 +249,12 @@
             android:orientation="horizontal"
             android:padding="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="⏱️"
-                android:textSize="22sp" />
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:contentDescription=""
+                android:src="@drawable/ic_safe_trip"
+                android:tint="@color/text_on_accent" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -190,29 +269,32 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-bold"
                     android:text="Trayecto: 15:00 restante"
-                    android:textColor="@color/white"
+                    android:textColor="@color/text_on_accent"
                     android:textSize="14sp" />
 
                 <TextView
+                    android:id="@+id/lblDestinoTrayecto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Alerta si no confirmas llegada a salvo"
-                    android:textColor="#E0F2FE"
-                    android:textSize="12sp" />
+                    android:text="Destino seleccionado"
+                    android:textColor="@color/text_on_accent"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnFinalizarTrayecto"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Sentinela.SuccessActionButton"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
+                android:layout_height="48dp"
+                android:minWidth="92dp"
+                android:contentDescription="Confirmar que llegué a salvo y finalizar el trayecto"
                 android:text="Llegué"
-                android:textColor="#065F46"
-                android:textSize="12sp"
-                app:backgroundTint="@color/white"
-                app:cornerRadius="18dp" />
+                app:icon="@drawable/ic_check_circle"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/sentinela_dark_green" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -226,10 +308,10 @@
         android:layout_marginEnd="16dp"
         android:contentDescription="Zonas de Riesgo y Comisarías"
         android:src="@drawable/ic_shield"
-        app:backgroundTint="@color/white"
+        app:backgroundTint="@color/surface_primary"
         app:fabCustomSize="48dp"
         app:maxImageSize="24dp"
-        app:tint="#065F46"
+        app:tint="@color/text_brand"
         app:elevation="4dp" />
 
     <!-- Botón flotante para cambiar estilo de mapa (Modo Diurno / Nocturno Táctico) -->
@@ -242,10 +324,10 @@
         android:layout_marginEnd="16dp"
         android:contentDescription="Cambiar estilo de mapa"
         android:src="@drawable/ic_layers"
-        app:backgroundTint="@color/white"
+        app:backgroundTint="@color/surface_primary"
         app:fabCustomSize="48dp"
         app:maxImageSize="24dp"
-        app:tint="#475569"
+        app:tint="@color/text_secondary"
         app:elevation="4dp" />
 
     <!-- Botón flotante para centrar en Mi Ubicación actual -->
@@ -258,10 +340,10 @@
         android:layout_marginEnd="16dp"
         android:contentDescription="Centrar en mi ubicación actual"
         android:src="@drawable/ic_my_location"
-        app:backgroundTint="@color/white"
+        app:backgroundTint="@color/surface_primary"
         app:fabCustomSize="48dp"
         app:maxImageSize="24dp"
-        app:tint="#10B981"
+        app:tint="@color/text_success"
         app:elevation="4dp" />
 
     <!-- Botones flotantes de acción rápida: Llamada Falsa y SOS Perú -->
@@ -278,46 +360,58 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFamilia"
-            style="@style/Widget.Material3.Button.ElevatedButton"
+            style="@style/Sentinela.CompactActionButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="👨‍👩‍👧‍👦 Familia"
-            android:textColor="#064E3B"
+            android:text="Familia"
+            android:textColor="@color/text_brand"
             android:textSize="12sp"
-            app:backgroundTint="@color/white"
+            app:backgroundTint="@color/surface_primary"
             app:cornerRadius="24dp"
-            app:elevation="4dp" />
+            app:elevation="4dp"
+            app:icon="@drawable/ic_family"
+            app:iconTint="@color/text_brand"
+            app:iconPadding="4dp"
+            app:iconGravity="textStart" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLlamadaFalsa"
-            style="@style/Widget.Material3.Button.ElevatedButton"
+            style="@style/Sentinela.CompactActionButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="📞 Llamada"
-            android:textColor="#1F2937"
+            android:text="Llamada"
+            android:textColor="@color/text_primary"
             android:textSize="12sp"
-            app:backgroundTint="@color/white"
+            app:backgroundTint="@color/surface_primary"
             app:cornerRadius="24dp"
-            app:elevation="4dp" />
+            app:elevation="4dp"
+            app:icon="@drawable/ic_call"
+            app:iconTint="@color/text_primary"
+            app:iconPadding="4dp"
+            app:iconGravity="textStart" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSosCentrales"
-            style="@style/Widget.Material3.Button.ElevatedButton"
+            style="@style/Sentinela.CompactActionButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp"
             android:layout_weight="1"
-            android:text="🚨 SOS (105)"
-            android:textColor="#DC2626"
+            android:text="SOS (105)"
+            android:textColor="@color/text_error"
             android:textSize="12sp"
-            app:backgroundTint="@color/white"
+            app:backgroundTint="@color/surface_primary"
             app:cornerRadius="24dp"
-            app:elevation="4dp" />
+            app:elevation="4dp"
+            app:icon="@drawable/ic_warning"
+            app:iconTint="@color/text_error"
+            app:iconPadding="4dp"
+            app:iconGravity="textStart" />
     </LinearLayout>
 
     <!-- Panel inferior -->
@@ -350,7 +444,7 @@
             android:layout_marginTop="4dp"
             android:fontFamily="sans-serif-medium"
             android:text="Contactos"
-            android:textColor="@color/label"
+            android:textColor="@color/text_primary"
             android:textSize="16sp" />
 
         <LinearLayout
@@ -384,7 +478,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="60dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="16dp"
@@ -392,26 +486,28 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDesactivar"
-                style="@style/Sentinela.FilledButton"
+                style="@style/Sentinela.DangerActionButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="56dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:text="ACTIVAR"
-                android:textSize="17sp"
-                app:cornerRadius="12dp" />
+                android:contentDescription="Activar alerta SOS de emergencia"
+                android:text="ACTIVAR SOS"
+                app:icon="@drawable/ic_warning"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnModoDiscreto"
-                style="@style/Sentinela.FilledButton"
+            style="@style/Sentinela.CompactActionButton"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="56dp"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:text="Modo Discreto"
-                android:textColor="@color/sentinela_dark_green"
+                android:textColor="@color/chip_green_text"
                 android:textSize="17sp"
-                app:backgroundTint="@color/sentinela_mint"
+                app:backgroundTint="@color/chip_green_bg"
                 app:cornerRadius="12dp" />
         </LinearLayout>
     </LinearLayout>

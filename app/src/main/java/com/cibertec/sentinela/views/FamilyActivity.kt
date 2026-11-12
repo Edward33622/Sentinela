@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +24,7 @@ import com.cibertec.sentinela.models.JoinFamilyGroupRequest
 import com.cibertec.sentinela.services.ApiClient
 import com.cibertec.sentinela.services.realizarPeticion
 import com.cibertec.sentinela.utils.SessionManager
+import com.cibertec.sentinela.utils.SentinelaToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
@@ -83,7 +83,7 @@ class FamilyActivity : AppCompatActivity() {
         binding.btnUnirmeGrupo.setOnClickListener {
             val codigo = binding.txtCodigoInvitacion.text?.toString()?.trim()?.uppercase()
             if (codigo.isNullOrEmpty()) {
-                Toast.makeText(this, "Por favor ingresa un código de invitación", Toast.LENGTH_SHORT).show()
+                SentinelaToast.show(this, "Por favor ingresa un código de invitación", SentinelaToast.Type.WARNING)
                 return@setOnClickListener
             }
             unirmeGrupo(codigo)
@@ -94,7 +94,7 @@ class FamilyActivity : AppCompatActivity() {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("Código Sentinela Familia", codigo)
             clipboard.setPrimaryClip(clip)
-            Toast.makeText(this, "Código $codigo copiado al portapapeles", Toast.LENGTH_SHORT).show()
+            SentinelaToast.show(this, "Código copiado al portapapeles", SentinelaToast.Type.INFO)
         }
 
         binding.btnCompartirWhatsapp.setOnClickListener {
@@ -157,7 +157,7 @@ class FamilyActivity : AppCompatActivity() {
                 ApiClient.family.createGroup(CreateFamilyGroupRequest(userId = userId, groupName = nombre))
             }.onSuccess { grupo ->
                 binding.progressBarFamilia.visibility = View.GONE
-                Toast.makeText(this@FamilyActivity, "¡Círculo Familiar creado con éxito!", Toast.LENGTH_LONG).show()
+                SentinelaToast.show(this@FamilyActivity, "¡Círculo Familiar creado con éxito!", SentinelaToast.Type.SUCCESS, SentinelaToast.Length.LONG)
                 mostrarEstadoConGrupo(grupo)
             }.onFailure { err ->
                 binding.progressBarFamilia.visibility = View.GONE
@@ -179,7 +179,7 @@ class FamilyActivity : AppCompatActivity() {
                 ApiClient.family.joinGroup(JoinFamilyGroupRequest(userId = userId, groupCode = codigo))
             }.onSuccess { grupo ->
                 binding.progressBarFamilia.visibility = View.GONE
-                Toast.makeText(this@FamilyActivity, "¡Te has unido al Círculo Familiar!", Toast.LENGTH_LONG).show()
+                SentinelaToast.show(this@FamilyActivity, "¡Te has unido al Círculo Familiar!", SentinelaToast.Type.SUCCESS, SentinelaToast.Length.LONG)
                 mostrarEstadoConGrupo(grupo)
             }.onFailure { err ->
                 binding.progressBarFamilia.visibility = View.GONE
@@ -204,7 +204,7 @@ class FamilyActivity : AppCompatActivity() {
                     binding.progressBarFamilia.visibility = View.GONE
                     grupoActual = null
                     mostrarEstadoSinGrupo()
-                    Toast.makeText(this@FamilyActivity, "Has salido del Círculo Familiar", Toast.LENGTH_SHORT).show()
+                    SentinelaToast.show(this@FamilyActivity, "Has salido del Círculo Familiar", SentinelaToast.Type.INFO)
                 }
             }
             .setNegativeButton("Cancelar", null)
@@ -266,20 +266,20 @@ class FamilyActivity : AppCompatActivity() {
                 val icon = if (item.isCharging == true) "⚡🔋" else "🔋"
                 itemBinding.lblBateriaFamiliar.text = "$icon $batLevel%"
                 if (batLevel <= 15) {
-                    itemBinding.lblBateriaFamiliar.setTextColor(Color.parseColor("#EF4444"))
+                    itemBinding.lblBateriaFamiliar.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_error))
                 } else {
-                    itemBinding.lblBateriaFamiliar.setTextColor(Color.parseColor("#064E3B"))
+                    itemBinding.lblBateriaFamiliar.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_brand))
                 }
 
                 // Estado de emergencia o zona
                 if (item.isEmergencyActive == true) {
-                    itemBinding.lblEstadoFamiliar.text = "🚨 ¡EMERGENCIA SOS ACTIVA!"
-                    itemBinding.lblEstadoFamiliar.setTextColor(Color.parseColor("#DC2626"))
+                    itemBinding.lblEstadoFamiliar.text = "¡EMERGENCIA SOS ACTIVA!"
+                    itemBinding.lblEstadoFamiliar.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_error))
                     itemBinding.dotEstadoConexion.background =
                         ContextCompat.getDrawable(itemView.context, R.drawable.bg_circle_red)
                 } else {
-                    itemBinding.lblEstadoFamiliar.text = item.currentStatus ?: "🟢 En Línea"
-                    itemBinding.lblEstadoFamiliar.setTextColor(Color.parseColor("#10B981"))
+                    itemBinding.lblEstadoFamiliar.text = item.currentStatus ?: "En línea"
+                    itemBinding.lblEstadoFamiliar.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_success))
                     itemBinding.dotEstadoConexion.background =
                         ContextCompat.getDrawable(itemView.context, R.drawable.bg_circle_green)
                 }

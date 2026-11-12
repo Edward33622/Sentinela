@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
@@ -48,6 +49,7 @@ ContactsBottomSheet : BottomSheetDialogFragment() {
     private var _binding: FragmentContactsBinding? = null
     private val binding get() = _binding!!
 
+    private var todos: List<ContactoTelefono> = emptyList()
     private var contactos: List<ContactoTelefono> = emptyList()
     private val adapter = ContactosAdapter()
 
@@ -65,6 +67,7 @@ ContactsBottomSheet : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.contactosTable.adapter = adapter
         binding.btnAgregarManual.setOnClickListener { mostrarDialogoManual() }
+        binding.txtBuscarContacto.doAfterTextChanged { filtrar(it?.toString().orEmpty()) }
         requestContactsAccess()
     }
 
@@ -196,11 +199,34 @@ ContactsBottomSheet : BottomSheetDialogFragment() {
 
     private fun fetchContacts() {
         viewLifecycleOwner.lifecycleScope.launch {
-            contactos = withContext(Dispatchers.IO) { leerContactos(requireContext().applicationContext) }
-            adapter.notifyDataSetChanged()
-            binding.lblSinContactos.visibility = if (contactos.isEmpty()) View.VISIBLE else View.GONE
+            todos = withContext(Dispatchers.IO) { leerContactos(requireContext().applicationContext) }
+            filtrar(binding.txtBuscarContacto.text.toString())
         }
     }
+
+    // MARK: - Buscador
+
+    /** Filtra por nombre (sin distinguir tildes ni mayúsculas) o por dígitos del número. */
+    private fun filtrar(texto: String) {
+        val consulta = normalizar(texto.trim())
+        val digitos = texto.filter { it.isDigit() }
+        contactos = if (consulta.isEmpty()) todos else todos.filter { contacto ->
+            normalizar(contacto.nombre).contains(consulta) ||
+                (digitos.isNotEmpty() && contacto.telefono.filter { it.isDigit() }.contains(digitos))
+        }
+        adapter.notifyDataSetChanged()
+        binding.lblSinContactos.text = if (todos.isEmpty()) {
+            getString(R.string.contactos_agenda_vacia)
+        } else {
+            "No hay contactos que coincidan con «${texto.trim()}»."
+        }
+        binding.lblSinContactos.visibility = if (contactos.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    private fun normalizar(texto: String): String =
+        java.text.Normalizer.normalize(texto, java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{Mn}+"), "")
+            .lowercase()
 
     /** Solo contactos con número de teléfono; se toma el primer número de cada uno. */
     private fun leerContactos(context: Context): List<ContactoTelefono> {

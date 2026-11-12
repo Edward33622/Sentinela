@@ -13,7 +13,7 @@
         android:layout_height="50dp"
         android:background="@drawable/bg_circle_contact"
         android:gravity="center"
-        android:textColor="@color/white"
+        android:textColor="@color/text_on_accent"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -25,6 +25,6 @@
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="1"
-        android:textColor="@color/label"
+        android:textColor="@color/text_primary"
         android:textSize="11sp" />
 </LinearLayout>

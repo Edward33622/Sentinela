@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -69,7 +70,14 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
 
-    // Ubicación (equivalente a CoreLocation) y mapa (equivalente a MapKit)
+    // Ubicacion y mapa
     implementation(libs.play.services.location)
     implementation(libs.osmdroid)
+
+    // Biometria (Huella dactilar / Credenciales del dispositivo)
+    implementation(libs.androidx.biometric)
+
+    // Firebase Phone Auth (Validacion de numero de telefono por SMS)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 }

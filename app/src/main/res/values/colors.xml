@@ -5,8 +5,24 @@
     <color name="sentinela_green_20">#3310B981</color>
     <color name="sentinela_mint">#D1FAE5</color>
     <color name="sentinela_red">#EF4444</color>
+    <color name="sentinela_emergency">#B91C1C</color>
+    <color name="sentinela_emergency_dark">#7F1D1D</color>
+    <color name="sentinela_success">#047857</color>
+    <color name="sentinela_surface">#F8FAFC</color>
+    <color name="sentinela_border">#CBD5E1</color>
     <color name="sentinela_contact_circle">#0F6B4F</color>
     <color name="sentinela_history_bg">#265946</color>
+    <color name="screen_background">#F2F6F4</color>
+    <color name="surface_primary">#FFFFFF</color>
+    <color name="surface_secondary">#F8FAFC</color>
+    <color name="text_on_accent">#FFFFFF</color>
+    <color name="text_brand">#064E3B</color>
+    <color name="text_success">#047857</color>
+    <color name="text_warning">#92400E</color>
+    <color name="text_error">#B91C1C</color>
+    <color name="text_muted">#64748B</color>
+    <color name="outline">#CBD5E1</color>
+    <color name="status_warning">#92400E</color>
     <color name="handle_green">#80064E3B</color>
     <color name="field_translucent">#69FFFFFF</color>
     <color name="black_40">#66000000</color>
@@ -29,4 +45,21 @@
     <color name="text_secondary">#4B5563</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+
+    <!-- Paleta del tema (tiene su versión en values-night) -->
+    <color name="theme_primary">#064E3B</color>
+    <color name="theme_on_primary">#FFFFFF</color>
+    <color name="theme_primary_container">#D1FAE5</color>
+    <color name="theme_on_primary_container">#064E3B</color>
+    <color name="theme_surface_container_low">#F7FBF9</color>
+    <color name="theme_surface_container">#F1F7F4</color>
+    <color name="theme_surface_container_high">#FFFFFF</color>
+    <color name="theme_surface_container_highest">#E6F0EB</color>
+
+    <!-- Fondos verde claro con esquinas redondeadas para textos y etiquetas -->
+    <color name="chip_green_bg">#E3F5EC</color>
+    <color name="chip_green_text">#065F46</color>
+    <color name="chip_green_stroke">#C6EBD8</color>
+    <color name="chip_red_bg">#FDE2E2</color>
+    <color name="chip_red_text">#991B1B</color>
 </resources>

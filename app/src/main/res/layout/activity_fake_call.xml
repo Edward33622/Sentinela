@@ -35,7 +35,7 @@
             android:layout_marginTop="24dp"
             android:fontFamily="sans-serif-bold"
             android:text="Mamá"
-            android:textColor="@color/white"
+            android:textColor="@color/text_on_accent"
             android:textSize="32sp" />
 
         <TextView
@@ -45,7 +45,7 @@
             android:layout_marginTop="8dp"
             android:fontFamily="sans-serif"
             android:text="Llamada entrante..."
-            android:textColor="#94A3B8"
+            android:textColor="@color/text_muted"
             android:textSize="18sp" />
 
         <!-- Cronómetro activo de llamada -->
@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#10B981"
+            android:textColor="@color/text_success"
             android:textSize="20sp"
             android:visibility="gone" />
     </LinearLayout>
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="Silenciar"
-                android:textColor="#CBD5E1"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>
 
@@ -112,7 +112,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="Altavoz"
-                android:textColor="#CBD5E1"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
@@ -151,7 +151,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Rechazar"
-                android:textColor="#EF4444"
+                android:textColor="@color/text_error"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -179,7 +179,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Contestar"
-                android:textColor="#10B981"
+                android:textColor="@color/text_success"
                 android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
@@ -211,7 +211,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Finalizar"
-            android:textColor="#EF4444"
+            android:textColor="@color/text_error"
             android:textSize="14sp" />
     </LinearLayout>
 </RelativeLayout>

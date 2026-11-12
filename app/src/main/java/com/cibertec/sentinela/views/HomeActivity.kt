@@ -5,6 +5,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
@@ -34,6 +37,7 @@ import com.cibertec.sentinela.services.ApiClient
 import com.cibertec.sentinela.services.realizarPeticion
 import com.cibertec.sentinela.utils.BatteryMonitor
 import com.cibertec.sentinela.utils.SessionManager
+import com.cibertec.sentinela.utils.SentinelaToast
 import com.cibertec.sentinela.utils.presentarAlerta
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -53,10 +57,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
-import android.animation.ValueAnimator
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.location.Location
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
@@ -68,6 +68,8 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 class HomeActivity : AppCompatActivity() {
+
+    private data class RouteResult(val points: List<GeoPoint>, val isApproximate: Boolean)
 
     companion object {
         const val EXTRA_USUARIO = "usuarioSesion"
@@ -132,6 +134,14 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var session: SessionManager
     private val contactoDao by lazy { SentinelaDatabase.get(this).contactoDao() }
+    private val connectivityManager by lazy { getSystemService(ConnectivityManager::class.java) }
+    private var networkCallbackRegistered = false
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) = runOnUiThread { actualizarEstadoConectividad() }
+        override fun onLost(network: Network) = runOnUiThread { actualizarEstadoConectividad() }
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) =
+            runOnUiThread { actualizarEstadoConectividad() }
+    }
 
     var usuarioSesion: UserDetail? = null
 
@@ -147,6 +157,7 @@ class HomeActivity : AppCompatActivity() {
     // Superposiciones de ruta y detección inteligente
     private var rutaPolylineOverlay: Polyline? = null
     private val rutaMarkers: MutableList<Marker> = mutableListOf()
+    private var routeRequestGeneration: Long = 0L
     private val familyMarkers: MutableList<Marker> = mutableListOf()
     private var securityOverlayHandles: com.cibertec.sentinela.utils.SecurityOverlayHandles? = null
     private var capaSeguridadActiva: Boolean = true
@@ -164,7 +175,6 @@ class HomeActivity : AppCompatActivity() {
     private var segundosInmovil: Int = 0
     private var desvioAlertaDisparada: Boolean = false
     private var inmovilAlertaDisparada: Boolean = false
-    private var pulseAnimator: ObjectAnimator? = null
 
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
@@ -172,11 +182,22 @@ class HomeActivity : AppCompatActivity() {
 
     private val permisosLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultado ->
-            val concedido = resultado[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                            resultado[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-            if (concedido) {
+            val concedidoUbicacion = resultado[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                            resultado[Manifest.permission.ACCESS_COARSE_LOCATION] == true ||
+                            tienePermisoUbicacion()
+            if (concedidoUbicacion) {
                 mostrarUbicacionDelUsuario()
                 centrarEnUbicacionActual(animar = true)
+            } else {
+                actualizarEstadoUbicacion(null)
+            }
+            if (resultado[Manifest.permission.SEND_SMS] == false) {
+                SentinelaToast.show(
+                    this,
+                    "Permiso de SMS no concedido: la alerta por SMS requiere este permiso.",
+                    SentinelaToast.Type.WARNING,
+                    SentinelaToast.Length.LONG
+                )
             }
         }
 
@@ -185,6 +206,16 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         session = SessionManager(this)
+
+        if (!session.pinsConfigured || session.pinSeguridad.isBlank() || session.pinCoaccion.isBlank()) {
+            session.pinsConfigured = false
+            startActivity(
+                Intent(this, PinSetupActivity::class.java)
+                    .putExtra(EXTRA_TRIGGER_EMERGENCY, intent.getBooleanExtra(EXTRA_TRIGGER_EMERGENCY, false))
+            )
+            finish()
+            return
+        }
 
         @Suppress("DEPRECATION")
         usuarioSesion = intent.getSerializableExtra(EXTRA_USUARIO) as? UserDetail
@@ -259,12 +290,44 @@ class HomeActivity : AppCompatActivity() {
         super.onResume()
         binding.mapView.onResume()
         locationOverlay?.enableMyLocation()
+        if (locationOverlay?.myLocation != null) {
+            actualizarEstadoUbicacionDisponible()
+        } else {
+            actualizarEstadoUbicacion(null)
+        }
+        actualizarEstadoConectividad()
+        mostrarFotoPerfil()
         if (session.shakeEnabled) {
             com.cibertec.sentinela.emergency.ShakeService.iniciar(this)
         }
         actualizarCardEstadoSeguridad()
         actualizarBadgeHistorial()
         enviarPingFamiliarYActualizarMapa()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!networkCallbackRegistered) {
+            try {
+                connectivityManager.registerDefaultNetworkCallback(networkCallback)
+                networkCallbackRegistered = true
+            } catch (e: RuntimeException) {
+                Log.w(TAG, "No se pudo registrar el estado de red", e)
+            }
+        }
+        actualizarEstadoConectividad()
+    }
+
+    override fun onStop() {
+        if (networkCallbackRegistered) {
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback)
+            } catch (e: RuntimeException) {
+                Log.w(TAG, "No se pudo retirar el observador de red", e)
+            }
+            networkCallbackRegistered = false
+        }
+        super.onStop()
     }
 
     override fun onPause() {
@@ -274,7 +337,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        detenerAnimacionPulso()
         timerTrayecto?.cancel()
         timerVerificacion?.cancel()
         dialogoVerificacionActivo?.dismiss()
@@ -295,18 +357,18 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupMap() {
         binding.mapView.apply {
-            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(this, session.mapDarkTheme)
+            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(this, session.mapDarkThemeFor(this@HomeActivity))
             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             controller.setZoom(16.0)
             controller.setCenter(GeoPoint(-12.0464, -77.0428))
         }
 
         binding.btnEstiloMapa.setOnClickListener {
-            session.mapDarkTheme = !session.mapDarkTheme
-            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(binding.mapView, session.mapDarkTheme)
+            session.mapDarkTheme = !session.mapDarkThemeFor(this)
+            com.cibertec.sentinela.utils.MapStyleUtils.aplicarEstiloModerno(binding.mapView, session.mapDarkThemeFor(this))
             binding.mapView.invalidate()
-            val modo = if (session.mapDarkTheme) "🌙 Mapa Nocturno (Táctico)" else "☀️ Mapa Diurno"
-            android.widget.Toast.makeText(this, modo, android.widget.Toast.LENGTH_SHORT).show()
+            val modo = if (session.mapDarkThemeFor(this)) "Mapa nocturno activado" else "Mapa diurno activado"
+            SentinelaToast.show(this, modo, SentinelaToast.Type.INFO)
         }
 
         // Capa de Prevención Activa: Puntos de Ayuda (Comisarías/Serenazgo) y Zonas de Riesgo
@@ -315,18 +377,17 @@ class HomeActivity : AppCompatActivity() {
         binding.btnCapaSeguridad.setOnClickListener {
             capaSeguridadActiva = !capaSeguridadActiva
             alternarCapaSeguridad(capaSeguridadActiva)
-            val estado = if (capaSeguridadActiva) "🛡️ Zonas de Riesgo y Comisarías: Visibles" else "🛡️ Capa de Prevención: Oculta"
+            val estado = if (capaSeguridadActiva) "Zonas de riesgo y comisarías visibles" else "Capa de prevención oculta"
             binding.btnCapaSeguridad.imageTintList = android.content.res.ColorStateList.valueOf(
-                if (capaSeguridadActiva) Color.parseColor("#065F46") else Color.parseColor("#94A3B8")
+                ContextCompat.getColor(this, if (capaSeguridadActiva) R.color.text_brand else R.color.text_muted)
             )
-            android.widget.Toast.makeText(this, estado, android.widget.Toast.LENGTH_SHORT).show()
+            SentinelaToast.show(this, estado, SentinelaToast.Type.INFO)
         }
 
         if (tienePermisoUbicacion()) {
             mostrarUbicacionDelUsuario()
-        } else {
-            solicitarPermisosUbicacion()
         }
+        verificarYSolicitarPermisos()
     }
 
     private fun alternarCapaSeguridad(activar: Boolean) {
@@ -351,16 +412,26 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun solicitarPermisosUbicacion() {
-        val permisos = mutableListOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permisos.add(Manifest.permission.POST_NOTIFICATIONS)
+    private fun verificarYSolicitarPermisos() {
+        val faltantes = mutableListOf<String>()
+        if (!tienePermisoUbicacion()) {
+            faltantes.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            faltantes.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         }
-        permisosLauncher.launch(permisos.toTypedArray())
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            faltantes.add(Manifest.permission.SEND_SMS)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                faltantes.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        if (faltantes.isNotEmpty()) {
+            permisosLauncher.launch(faltantes.toTypedArray())
+        }
     }
+
+    private fun solicitarPermisosUbicacion() = verificarYSolicitarPermisos()
 
     private fun tienePermisoUbicacion(): Boolean {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
@@ -370,7 +441,10 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun mostrarUbicacionDelUsuario() {
-        if (!tienePermisoUbicacion()) return
+        if (!tienePermisoUbicacion()) {
+            actualizarEstadoUbicacion(null)
+            return
+        }
 
         if (locationOverlay == null) {
             val provider = GpsMyLocationProvider(this).apply {
@@ -382,6 +456,7 @@ class HomeActivity : AppCompatActivity() {
             overlay.runOnFirstFix {
                 runOnUiThread {
                     overlay.myLocation?.let {
+                        actualizarEstadoUbicacionDisponible()
                         binding.mapView.controller.setZoom(17.0)
                         binding.mapView.controller.animateTo(it)
                     }
@@ -399,6 +474,7 @@ class HomeActivity : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun centrarEnUbicacionActual(animar: Boolean = true) {
         if (!tienePermisoUbicacion()) {
+            actualizarEstadoUbicacion(null)
             solicitarPermisosUbicacion()
             return
         }
@@ -406,6 +482,7 @@ class HomeActivity : AppCompatActivity() {
         // 1. Si el overlay ya tiene fix de posición, usarlo directamente
         val myLoc = locationOverlay?.myLocation
         if (myLoc != null) {
+            actualizarEstadoUbicacionDisponible()
             binding.mapView.controller.setZoom(17.0)
             if (animar) {
                 binding.mapView.controller.animateTo(myLoc)
@@ -418,6 +495,8 @@ class HomeActivity : AppCompatActivity() {
         // 2. Si todavía no hay fix en el overlay, consultar FusedLocationProviderClient (inmediato)
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             if (loc != null) {
+                EmergencyManager.lastKnownLocation = loc
+                actualizarEstadoUbicacion(loc)
                 val geoPoint = GeoPoint(loc.latitude, loc.longitude)
                 binding.mapView.controller.setZoom(17.0)
                 if (animar) {
@@ -429,6 +508,8 @@ class HomeActivity : AppCompatActivity() {
                 fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                     .addOnSuccessListener { freshLoc ->
                         if (freshLoc != null) {
+                            EmergencyManager.lastKnownLocation = freshLoc
+                            actualizarEstadoUbicacion(freshLoc)
                             val geoPoint = GeoPoint(freshLoc.latitude, freshLoc.longitude)
                             binding.mapView.controller.setZoom(17.0)
                             if (animar) {
@@ -442,6 +523,53 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun actualizarEstadoUbicacion(location: Location?) {
+        if (!::binding.isInitialized) return
+        binding.lblEstadoGps.text = when {
+            !session.locationEnabled -> "Ubicación pausada en ajustes"
+            !tienePermisoUbicacion() -> "Permiso de ubicación desactivado"
+            location != null -> "Ubicación disponible"
+            else -> "Buscando señal GPS…"
+        }
+        binding.lblEstadoGps.contentDescription = binding.lblEstadoGps.text
+    }
+
+    private fun actualizarEstadoUbicacionDisponible() {
+        if (!::binding.isInitialized) return
+        binding.lblEstadoGps.text = if (!session.locationEnabled) {
+            "Ubicación pausada en ajustes"
+        } else if (tienePermisoUbicacion()) {
+            "Ubicación disponible"
+        } else {
+            "Permiso de ubicación desactivado"
+        }
+        binding.lblEstadoGps.contentDescription = binding.lblEstadoGps.text
+    }
+
+    private fun actualizarEstadoConectividad() {
+        if (!::binding.isInitialized) return
+        val capabilities = connectivityManager.activeNetwork?.let(connectivityManager::getNetworkCapabilities)
+        val validada = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+        binding.lblEstadoRed.text = if (validada) "En línea" else "Sin internet"
+        binding.lblEstadoRed.contentDescription = if (validada) {
+            "Conexión a internet disponible"
+        } else {
+            "Sin conexión a internet; algunas funciones pueden quedar pendientes"
+        }
+        if (EmergencyManager.isServiceActive.value) {
+            actualizarEstadoRuta(
+                if (validada) "Alerta activa · conexión disponible para compartir ubicación"
+                else "Alerta activa · sin internet; la ubicación remota puede tardar"
+            )
+        }
+    }
+
+    private fun actualizarEstadoRuta(mensaje: String) {
+        if (!::binding.isInitialized) return
+        binding.lblEstadoRuta.text = mensaje
+        binding.lblEstadoRuta.contentDescription = mensaje
+    }
+
     // MARK: - Panel inferior
 
     private fun setupCollectionView() {
@@ -450,7 +578,11 @@ class HomeActivity : AppCompatActivity() {
 
     private fun togglePanel() {
         val desplazamiento = if (isOpen) 200 * resources.displayMetrics.density else 0f
-        binding.bottomSheet.animate().translationY(desplazamiento).setDuration(300).start()
+        binding.bottomSheet.animate()
+            .translationY(desplazamiento)
+            .setDuration(240)
+            .setInterpolator(android.view.animation.AccelerateDecelerateInterpolator())
+            .start()
         isOpen = !isOpen
     }
 
@@ -478,8 +610,32 @@ class HomeActivity : AppCompatActivity() {
         presentarAlerta(mensaje)
     }
 
+    /** Muestra en el botón de perfil la foto del usuario (circular) o el ícono por defecto. */
+    private fun mostrarFotoPerfil() {
+        val foto = com.cibertec.sentinela.utils.FotoPerfil.cargar(this, session.userId)
+        if (foto != null) {
+            val circular = androidx.core.graphics.drawable.RoundedBitmapDrawableFactory.create(resources, foto)
+                .apply { isCircular = true }
+            binding.btnPerfil.imageTintList = null
+            binding.btnPerfil.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+            binding.btnPerfil.setPadding(0, 0, 0, 0)
+            binding.btnPerfil.setImageDrawable(circular)
+        } else {
+            binding.btnPerfil.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_brand))
+            binding.btnPerfil.scaleType = android.widget.ImageView.ScaleType.CENTER
+            binding.btnPerfil.setImageResource(R.drawable.ic_person)
+        }
+    }
+
     private fun actualizarEstiloModoDiscreto() {
-        binding.btnModoDiscreto.alpha = if (session.modoDiscreto) 1.0f else 0.5f
+        val activo = session.modoDiscreto
+        val fondo = if (activo) R.color.theme_primary else R.color.chip_green_bg
+        val texto = if (activo) R.color.theme_on_primary else R.color.chip_green_text
+        binding.btnModoDiscreto.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, fondo))
+        binding.btnModoDiscreto.setTextColor(ContextCompat.getColor(this, texto))
+        binding.btnModoDiscreto.strokeColor = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.chip_green_stroke))
+        binding.btnModoDiscreto.strokeWidth = if (activo) 0 else resources.getDimensionPixelSize(R.dimen.stroke_hairline)
+        binding.btnModoDiscreto.text = if (activo) "Discreto activo" else "Modo Discreto"
     }
 
     // MARK: - Emergencia
@@ -494,9 +650,14 @@ class HomeActivity : AppCompatActivity() {
         val estaActivo = EmergencyManager.isServiceActive.value
 
         if (!estaActivo) {
+            // Verificar si falta el permiso de SMS para enviar por Bitel
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                permisosLauncher.launch(arrayOf(Manifest.permission.SEND_SMS))
+            }
             // Activación directa de emergencia
             EmergencyManager.isServiceActive.value = true
             EmergencyService.iniciar(this)
+            presentarAlerta("🚨 ¡EMERGENCIA ACTIVADA!\nEnviando ubicación en vivo por WhatsApp y SMS a tus contactos de auxilio.")
         } else {
             // Desactivación protegida por PIN real o PIN de coacción (CU10 / CU11)
             mostrarDialogoPinDesactivacion()
@@ -576,6 +737,9 @@ class HomeActivity : AppCompatActivity() {
         trayectoOrigenActual = origen
         trayectoDestinoActual = destino
         trayectoMedioActual = medio
+        binding.lblDestinoTrayecto.text = "Destino: ${nombreDestinoVisible(destino)}"
+        binding.lblDestinoMapa.text = "Destino confirmado · ${nombreDestinoVisible(destino)}"
+        actualizarEstadoRuta("Trayecto activo · monitoreo en curso")
         puntoOrigenTrayecto = resolverCoordenadaLugar(origen)
         puntoDestinoTrayecto = resolverCoordenadaLugar(destino)
         ultimaUbicacionTrayecto = null
@@ -586,7 +750,14 @@ class HomeActivity : AppCompatActivity() {
         // Si no se había obtenido la ruta vial real por pistas, consultarla para el monitoreo
         if (puntoOrigenTrayecto != null && puntoDestinoTrayecto != null) {
             lifecycleScope.launch {
-                rutaPuntosActuales = obtenerRutaCallesReal(puntoOrigenTrayecto!!, puntoDestinoTrayecto!!, medio)
+                val route = obtenerRutaCallesReal(puntoOrigenTrayecto!!, puntoDestinoTrayecto!!, medio)
+                rutaPuntosActuales = route.points
+                if (timerTrayecto?.let { binding.bannerTrayecto.visibility == android.view.View.VISIBLE } == true) {
+                    actualizarEstadoRuta(
+                        if (route.isApproximate) "Ruta aproximada · el servicio de calles no respondió"
+                        else "Ruta vial disponible · ${nombreDestinoVisible(destino)}"
+                    )
+                }
             }
         }
 
@@ -639,6 +810,7 @@ class HomeActivity : AppCompatActivity() {
                     dialogoVerificacionActivo?.dismiss()
                     dialogoVerificacionActivo = null
                     binding.bannerTrayecto.visibility = android.view.View.GONE
+                    limpiarRutaSeguraEnMapa()
                     presentarAlerta("✅ Has llegado a salvo. Monitoreo de trayecto finalizado con éxito.")
                 } else if (pin == session.pinCoaccion) {
                     timerTrayecto?.cancel()
@@ -646,6 +818,7 @@ class HomeActivity : AppCompatActivity() {
                     dialogoVerificacionActivo?.dismiss()
                     dialogoVerificacionActivo = null
                     binding.bannerTrayecto.visibility = android.view.View.GONE
+                    limpiarRutaSeguraEnMapa()
                     EmergencyService.activarCoaccion(this)
                     presentarAlerta("Trayecto finalizado.")
                 } else {
@@ -655,6 +828,28 @@ class HomeActivity : AppCompatActivity() {
             .setNegativeButton("Continuar viaje", null)
             .show()
     }
+
+    private fun limpiarRutaSeguraEnMapa() {
+        rutaPolylineOverlay?.let { binding.mapView.overlays.remove(it) }
+        rutaPolylineOverlay = null
+        rutaMarkers.forEach { binding.mapView.overlays.remove(it) }
+        rutaMarkers.clear()
+        rutaPuntosActuales = emptyList()
+        puntoOrigenTrayecto = null
+        puntoDestinoTrayecto = null
+        routeRequestGeneration++
+        binding.lblDestinoMapa.text = "Sin trayecto seleccionado"
+        binding.lblDestinoTrayecto.text = "Destino seleccionado"
+        actualizarEstadoRuta("Sin trayecto activo")
+        binding.mapView.invalidate()
+    }
+
+    private fun nombreDestinoVisible(destino: String): String =
+        if (destino.contains("CIUDAD DE DIOS", ignoreCase = true)) {
+            "Mercado Ciudad de Dios · San Juan de Miraflores"
+        } else {
+            destino
+        }
 
     // MARK: - D. Detección Inteligente de Desvíos e Inmovilidad
 
@@ -844,6 +1039,11 @@ class HomeActivity : AppCompatActivity() {
         // 1. Coincidencia directa en distritos
         COORDENADAS_DISTRITOS[lugar]?.let { return it }
 
+        // Priorizar el mercado Ciudad de Dios de San Juan de Miraflores sobre localidades homónimas.
+        if (lugarUpper.contains("CIUDAD DE DIOS")) {
+            return GeoPoint(-12.15274, -76.97094)
+        }
+
         // 2. Coincidencia parcial con distritos
         for ((distrito, geo) in COORDENADAS_DISTRITOS) {
             val nombreBase = distrito.substringBefore(" (").uppercase()
@@ -897,7 +1097,7 @@ class HomeActivity : AppCompatActivity() {
         return minDist
     }
 
-    private suspend fun obtenerRutaCallesReal(inicio: GeoPoint, fin: GeoPoint, medio: String): List<GeoPoint> = withContext(Dispatchers.IO) {
+    private suspend fun obtenerRutaCallesReal(inicio: GeoPoint, fin: GeoPoint, medio: String): RouteResult = withContext(Dispatchers.IO) {
         val modo = if (medio.contains("pie", ignoreCase = true)) "foot" else "driving"
         val urlStr = "https://router.project-osrm.org/route/v1/$modo/${inicio.longitude},${inicio.latitude};${fin.longitude},${fin.latitude}?overview=full&geometries=geojson"
 
@@ -931,7 +1131,7 @@ class HomeActivity : AppCompatActivity() {
                             puntosViales.add(GeoPoint(lat, lon))
                         }
                         if (puntosViales.size >= 2) {
-                            return@withContext puntosViales
+                            return@withContext RouteResult(puntosViales, isApproximate = false)
                         }
                     }
                 }
@@ -940,7 +1140,7 @@ class HomeActivity : AppCompatActivity() {
             Log.w(TAG, "No se pudo consultar enrutador OSRM en tiempo real: ${e.message}")
         }
 
-        return@withContext generarPuntosCorredor(inicio, fin)
+        return@withContext RouteResult(generarPuntosCorredor(inicio, fin), isApproximate = true)
     }
 
     private fun generarPuntosCorredor(inicio: GeoPoint, fin: GeoPoint): List<GeoPoint> {
@@ -980,6 +1180,9 @@ class HomeActivity : AppCompatActivity() {
         nivelRiesgo: String,
         esInviable: Boolean
     ) {
+        binding.lblDestinoMapa.text = "Destino confirmado · ${nombreDestinoVisible(destino)}"
+        actualizarEstadoRuta("Consultando calles para ${nombreDestinoVisible(destino)}…")
+
         // 1. Limpiar polilíneas y pines previos de rutas anteriores
         rutaPolylineOverlay?.let { binding.mapView.overlays.remove(it) }
         rutaPolylineOverlay = null
@@ -1038,9 +1241,19 @@ class HomeActivity : AppCompatActivity() {
         rutaMarkers.add(pinDestino)
 
         // 6. Consultar la ruta vial real por las pistas de OpenStreetMap (OSRM)
+        val generation = ++routeRequestGeneration
         lifecycleScope.launch {
-            val puntosViales = obtenerRutaCallesReal(pOrigen, pDestino, medio)
+            val route = obtenerRutaCallesReal(pOrigen, pDestino, medio)
+            if (generation != routeRequestGeneration || isFinishing || isDestroyed) return@launch
+            val puntosViales = route.points
             rutaPuntosActuales = puntosViales
+            actualizarEstadoRuta(
+                if (route.isApproximate) {
+                    "Ruta aproximada · el servicio de calles no respondió"
+                } else {
+                    "Ruta vial disponible · destino confirmado"
+                }
+            )
 
             val polyline = Polyline(binding.mapView).apply {
                 outlinePaint.apply {
@@ -1067,11 +1280,12 @@ class HomeActivity : AppCompatActivity() {
             binding.mapView.invalidate()
         }
 
-        android.widget.Toast.makeText(
+        SentinelaToast.show(
             this,
-            "🚦 Ruta segura por pistas trazada en el mapa: $etiquetaSemaforo",
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+            "Ruta segura trazada en el mapa: $etiquetaSemaforo",
+            SentinelaToast.Type.SUCCESS,
+            SentinelaToast.Length.LONG
+        )
     }
 
     // MARK: - Asistente IA de Evaluación de Riesgo (CU15)
@@ -1121,7 +1335,7 @@ class HomeActivity : AppCompatActivity() {
         val tvInfoCobertura = android.widget.TextView(this).apply {
             text = "📍 Cobertura activa: Lima Metropolitana y Callao\n$cuotaTexto"
             textSize = 12f
-            setTextColor(ContextCompat.getColor(context, R.color.sentinela_green))
+            setTextColor(ContextCompat.getColor(context, R.color.text_success))
             setPadding(0, 0, 0, 8)
         }
         contenedor.addView(tvInfoCobertura)
@@ -1146,7 +1360,7 @@ class HomeActivity : AppCompatActivity() {
                 if (pos >= 0) {
                     spinnerOrigen.setSelection(pos)
                     tvInfoCobertura.text = "📍 GPS Autodetectado: $distritoCercano\n$cuotaTexto"
-                    tvInfoCobertura.setTextColor(Color.parseColor("#10B981"))
+                    tvInfoCobertura.setTextColor(ContextCompat.getColor(this@HomeActivity, R.color.text_success))
                 }
             }
         }
@@ -1191,7 +1405,9 @@ class HomeActivity : AppCompatActivity() {
         contenedor.addView(tvLabelDestino)
 
         val txtDestino = android.widget.AutoCompleteTextView(this).apply {
-            val adapter = android.widget.ArrayAdapter(this@HomeActivity, android.R.layout.simple_dropdown_item_1line, distritosLimaCallao)
+            val opcionesDestino = distritosLimaCallao +
+                    "Mercado Ciudad de Dios, San Juan de Miraflores"
+            val adapter = android.widget.ArrayAdapter(this@HomeActivity, android.R.layout.simple_dropdown_item_1line, opcionesDestino)
             setAdapter(adapter)
             threshold = 1
             hint = "Ej. Miraflores, Av. Javier Prado, etc."
@@ -1207,11 +1423,27 @@ class HomeActivity : AppCompatActivity() {
         val atajos = listOf("🎓 Cibertec", "🏠 Casa", "💼 Trabajo", "🏬 C. Comercial")
         for (atajo in atajos) {
             val btnChip = com.google.android.material.button.MaterialButton(
-                this, null, com.google.android.material.R.attr.borderlessButtonStyle
+                this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle
             ).apply {
                 text = atajo
-                textSize = 10f
-                setPadding(8, 0, 8, 0)
+                textSize = 11f
+                isAllCaps = false
+                minWidth = 0
+                minimumWidth = 0
+                minHeight = 0
+                minimumHeight = 0
+                insetTop = 0
+                insetBottom = 0
+                val dp = resources.displayMetrics.density
+                setPadding((10 * dp).toInt(), (6 * dp).toInt(), (10 * dp).toInt(), (6 * dp).toInt())
+                cornerRadius = (50 * dp).toInt()
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_bg))
+                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_stroke))
+                setTextColor(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_text))
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { marginEnd = (6 * dp).toInt() }
                 setOnClickListener {
                     val lugar = when (atajo) {
                         "🎓 Cibertec" -> "Instituto Cibertec (Sede Miraflores)"
@@ -1252,7 +1484,41 @@ class HomeActivity : AppCompatActivity() {
                 }
                 val destino = txtDestino.text.toString().trim()
                 val medio = spinnerMedio.selectedItem.toString()
-                validarYProcesarRuta(origen, if (destino.isEmpty()) "Destino habitual" else destino, medio)
+                continuarConDestino(origen, if (destino.isEmpty()) "Destino habitual" else destino, medio)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun continuarConDestino(origen: String, destino: String, medio: String) {
+        val nombreNormalizado = destino.trim().uppercase()
+        val esCiudadDeDiosAmbiguo = nombreNormalizado.contains("CIUDAD DE DIOS") &&
+                !nombreNormalizado.contains("SAN JUAN") &&
+                !nombreNormalizado.contains("MERCADO")
+
+        if (!esCiudadDeDiosAmbiguo) {
+            validarYProcesarRuta(origen, destino, medio)
+            return
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Confirma el destino")
+            .setMessage("Hay lugares con el nombre Ciudad de Dios. Elige el resultado de San Juan de Miraflores o vuelve para precisar otra localidad.")
+            .setItems(arrayOf("Mercado Ciudad de Dios · San Juan de Miraflores", "Volver y precisar el destino")) { _, choice ->
+                if (choice == 0) {
+                    validarYProcesarRuta(
+                        origen,
+                        "Mercado Ciudad de Dios, San Juan de Miraflores",
+                        medio
+                    )
+                } else {
+                    SentinelaToast.show(
+                        this,
+                        "Añade el distrito y la provincia al destino antes de continuar.",
+                        SentinelaToast.Type.WARNING,
+                        SentinelaToast.Length.LONG
+                    )
+                }
             }
             .setNegativeButton("Cancelar", null)
             .show()
@@ -1337,6 +1603,8 @@ class HomeActivity : AppCompatActivity() {
         val horaActual = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
         val minutoActual = java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE)
         val horaTexto = String.format("%02d:%02d", horaActual, minutoActual)
+        binding.lblDestinoMapa.text = "Destino solicitado · ${nombreDestinoVisible(destino)}"
+        actualizarEstadoRuta("Analizando destino y seguridad de la ruta…")
 
         val dialogoCarga = MaterialAlertDialogBuilder(this)
             .setTitle("🤖 Consultando Google Gemini AI...")
@@ -1396,6 +1664,7 @@ class HomeActivity : AppCompatActivity() {
                 }
                 dialog.show()
             }.onFailure { err ->
+                actualizarEstadoRuta("No se pudo conectar para analizar la ruta. Revisa internet e inténtalo de nuevo.")
                 MaterialAlertDialogBuilder(this@HomeActivity)
                     .setTitle("⚠️ Error al Conectar con Sentinela IA")
                     .setMessage("No se pudo obtener la evaluación en tiempo real de Google Gemini (${err.localizedMessage ?: "Tiempo de espera agotado"}).\n\nPor favor verifica tu conexión a internet o el servicio de Sentinela y vuelve a intentar.")
@@ -1502,11 +1771,12 @@ class HomeActivity : AppCompatActivity() {
                 if (delaySegundos == 0) {
                     lanzarLlamadaFalsa(nombreLlamante)
                 } else {
-                    android.widget.Toast.makeText(
+                    SentinelaToast.show(
                         this,
-                        "⏳ Llamada de \"$nombreLlamante\" en $delaySegundos seg. Puedes bloquear la pantalla o minimizar.",
-                        android.widget.Toast.LENGTH_LONG
-                    ).show()
+                        "Llamada de \"$nombreLlamante\" en $delaySegundos seg. Puedes bloquear la pantalla o minimizar.",
+                        SentinelaToast.Type.INFO,
+                        SentinelaToast.Length.LONG
+                    )
 
                     Handler(Looper.getMainLooper()).postDelayed({
                         lanzarLlamadaFalsa(nombreLlamante)
@@ -1548,55 +1818,49 @@ class HomeActivity : AppCompatActivity() {
 
     private fun actualizarUIBotonPrincipal(isServiceActive: Boolean) {
         if (isServiceActive) {
-            binding.btnDesactivar.text = "DESACTIVAR"
+            binding.btnDesactivar.text = "DETENER SOS"
+            binding.btnDesactivar.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f)
             binding.btnDesactivar.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.sentinela_red))
-            iniciarAnimacionPulso(urgente = true)
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.sentinela_emergency_dark))
+            binding.btnDesactivar.contentDescription =
+                "Abrir confirmación para desactivar la alerta activa mediante PIN"
+            binding.btnDesactivar.scaleX = 1f
+            binding.btnDesactivar.scaleY = 1f
             binding.dotEstadoSeguridad.background = ContextCompat.getDrawable(this, R.drawable.bg_circle_red)
-            binding.lblEstadoSeguridad.text = "🚨 ALERTA ACTIVA"
-            binding.lblEstadoSeguridad.setTextColor(Color.parseColor("#DC2626"))
+            binding.lblEstadoSeguridad.text = "ALERTA ACTIVA"
+            binding.lblEstadoSeguridad.setTextColor(ContextCompat.getColor(this, R.color.sentinela_emergency))
+            actualizarEstadoRuta(
+                if (binding.lblEstadoRed.text == "Sin internet") {
+                    "Alerta activa · sin internet; la ubicación remota puede tardar"
+                } else {
+                    "Alerta activa · compartiendo ubicación"
+                }
+            )
         } else {
-            binding.btnDesactivar.text = "ACTIVAR"
+            binding.btnDesactivar.text = "ACTIVAR SOS"
+            binding.btnDesactivar.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f)
             binding.btnDesactivar.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.sentinela_green))
-            iniciarAnimacionPulso(urgente = false)
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.sentinela_emergency))
+            binding.btnDesactivar.contentDescription = "Activar alerta SOS de emergencia"
+            binding.btnDesactivar.scaleX = 1f
+            binding.btnDesactivar.scaleY = 1f
             binding.dotEstadoSeguridad.background = ContextCompat.getDrawable(this, R.drawable.bg_circle_green)
-            binding.lblEstadoSeguridad.text = "🛡️ Sentinela Activo"
-            binding.lblEstadoSeguridad.setTextColor(Color.parseColor("#064E3B"))
+            binding.lblEstadoSeguridad.text = "Sentinela activo"
+            binding.lblEstadoSeguridad.setTextColor(ContextCompat.getColor(this, R.color.text_brand))
+            if (binding.lblDestinoMapa.text == "Sin trayecto seleccionado") {
+                actualizarEstadoRuta("Sin trayecto activo")
+            }
         }
-    }
-
-    private fun iniciarAnimacionPulso(urgente: Boolean) {
-        pulseAnimator?.cancel()
-        val escalaMax = if (urgente) 1.08f else 1.03f
-        val duracion = if (urgente) 450L else 1400L
-
-        val scaleX = PropertyValuesHolder.ofFloat(android.view.View.SCALE_X, 1.0f, escalaMax)
-        val scaleY = PropertyValuesHolder.ofFloat(android.view.View.SCALE_Y, 1.0f, escalaMax)
-
-        pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(binding.btnDesactivar, scaleX, scaleY).apply {
-            duration = duracion
-            repeatMode = ValueAnimator.REVERSE
-            repeatCount = ValueAnimator.INFINITE
-            interpolator = AccelerateDecelerateInterpolator()
-            start()
-        }
-    }
-
-    private fun detenerAnimacionPulso() {
-        pulseAnimator?.cancel()
-        binding.btnDesactivar.scaleX = 1.0f
-        binding.btnDesactivar.scaleY = 1.0f
     }
 
     private fun actualizarCardEstadoSeguridad() {
         if (session.esPro()) {
-            binding.lblCuotaIa.text = "✨ IA: Ilimitado Pro"
-            binding.lblCuotaIa.setTextColor(Color.parseColor("#7C3AED"))
+            binding.lblCuotaIa.text = "IA: Ilimitado Pro"
+            binding.lblCuotaIa.setTextColor(ContextCompat.getColor(this, R.color.text_brand))
         } else {
             val restantes = (4 - session.consultasIaHoy).coerceAtLeast(0)
-            binding.lblCuotaIa.text = "🤖 IA: $restantes/4 hoy"
-            binding.lblCuotaIa.setTextColor(Color.parseColor("#475569"))
+            binding.lblCuotaIa.text = "IA: $restantes/4 hoy"
+            binding.lblCuotaIa.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
         }
     }
 
@@ -1799,18 +2063,17 @@ class HomeActivity : AppCompatActivity() {
             if (userId != 0 && token != null) {
                 realizarPeticion { ApiClient.contacts.obtenerContactosPorUsuario(userId, ApiClient.bearer(token)) }
                     .onSuccess { remotos ->
-                        var huboCambios = false
-                        for (r in remotos) {
-                            val tel = r.phoneNumber.orEmpty()
-                            val id = r.id.toString()
-                            if (contactoDao.contar(tel, id) == 0) {
-                                contactoDao.insertar(
-                                    ContactoEntity(id = id, nombre = r.fullName, telefono = tel)
-                                )
-                                huboCambios = true
+                        if (remotos.isNotEmpty()) {
+                            contactoDao.vaciar()
+                            for (r in remotos) {
+                                val tel = r.phoneNumber.orEmpty().trim()
+                                val id = r.id.toString()
+                                if (tel.isNotEmpty()) {
+                                    contactoDao.insertar(
+                                        ContactoEntity(id = id, nombre = r.fullName ?: "Contacto", telefono = tel)
+                                    )
+                                }
                             }
-                        }
-                        if (huboCambios) {
                             contactosGuardados = contactoDao.obtenerTodos()
                             contactosAdapter.notifyDataSetChanged()
                         }
@@ -1824,7 +2087,7 @@ class HomeActivity : AppCompatActivity() {
         if (!session.puedeAgregarContacto(contactosGuardados.size)) {
             MaterialAlertDialogBuilder(this)
                 .setTitle("⭐ Límite de Contactos (Plan Free)")
-                .setMessage("El Plan Sentinela Free te permite registrar hasta 2 contactos de auxilio.\n\nActualiza a Sentinela Pro para tener contactos ILIMITADOS y alertas SMS de respaldo con Twilio.")
+                .setMessage("El Plan Sentinela Free te permite registrar hasta 2 contactos de auxilio.\n\nActualiza a Sentinela Pro para tener contactos ILIMITADOS y alertas automáticas por SMS a toda tu red de auxilio.")
                 .setPositiveButton("Ver Planes Pro") { _, _ ->
                     startActivity(Intent(this, SuscripcionActivity::class.java))
                 }

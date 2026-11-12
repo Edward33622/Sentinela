@@ -1,8 +1,6 @@
 package com.cibertec.sentinela.views
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.PickVisualMediaRequest
@@ -15,6 +13,7 @@ import com.cibertec.sentinela.databinding.ActivityProfileBinding
 import com.cibertec.sentinela.models.UserDetail
 import com.cibertec.sentinela.services.ApiClient
 import com.cibertec.sentinela.services.realizarPeticion
+import com.cibertec.sentinela.utils.FotoPerfil
 import com.cibertec.sentinela.utils.SessionManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +23,6 @@ import android.util.Patterns
 import com.cibertec.sentinela.models.UpdateUserRequest
 import com.cibertec.sentinela.utils.ocultarTeclado
 import com.cibertec.sentinela.utils.presentarAlerta
-import java.io.File
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -57,11 +55,12 @@ class ProfileActivity : AppCompatActivity() {
             binding.phoneTextField.setText(it.phone.orEmpty())
         }
 
-        // Tap para cambiar imagen de perfil
-        binding.profileImageView.setOnClickListener { changeProfileImage() }
+        // Tap en la foto o en el ícono de cámara para cambiarla
+        binding.profileImageView.setOnClickListener { opcionesFoto() }
+        binding.btnCambiarFoto.setOnClickListener { opcionesFoto() }
 
-        // Cargar imagen guardada localmente si existe
-        loadProfileImage()?.let { binding.profileImageView.setImageBitmap(it) }
+        // Cargar la foto guardada de esta cuenta, si existe
+        FotoPerfil.cargar(this, session.userId)?.let { binding.profileImageView.setImageBitmap(it) }
 
         binding.btnGuardarPerfil.setOnClickListener { guardarPerfil() }
         binding.btnVerHistorial.setOnClickListener {
@@ -98,50 +97,41 @@ class ProfileActivity : AppCompatActivity() {
 
     // MARK: - Imagen de perfil
 
+    private fun opcionesFoto() {
+        if (FotoPerfil.cargar(this, session.userId) == null) {
+            changeProfileImage()
+            return
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Foto de perfil")
+            .setItems(arrayOf("Elegir otra foto de la galería", "Quitar foto")) { _, opcion ->
+                if (opcion == 0) {
+                    changeProfileImage()
+                } else {
+                    FotoPerfil.borrar(this, session.userId)
+                    binding.profileImageView.setImageResource(R.drawable.profile)
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
     private fun changeProfileImage() {
         pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
     private fun imagenSeleccionada(uri: Uri) {
         lifecycleScope.launch {
+            val userId = session.userId
             val imagen = withContext(Dispatchers.IO) {
-                decodificarImagen(uri)?.also { saveProfileImage(it) }
+                FotoPerfil.decodificar(this@ProfileActivity, uri)?.takeIf { FotoPerfil.guardar(this@ProfileActivity, userId, it) }
             }
-            if (imagen != null) binding.profileImageView.setImageBitmap(imagen)
-        }
-    }
-
-    /** Lee la imagen reduciéndola para no cargar fotos enormes en memoria. */
-    private fun decodificarImagen(uri: Uri): Bitmap? {
-        return try {
-            val limites = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, limites) }
-
-            var muestra = 1
-            while (limites.outWidth / muestra > 1024 || limites.outHeight / muestra > 1024) muestra *= 2
-
-            val opciones = BitmapFactory.Options().apply { inSampleSize = muestra }
-            contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opciones) }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun saveProfileImage(image: Bitmap): Boolean {
-        return try {
-            File(filesDir, "profile.jpg").outputStream().use {
-                image.compress(Bitmap.CompressFormat.JPEG, 90, it)
+            if (imagen != null) {
+                binding.profileImageView.setImageBitmap(imagen)
+            } else {
+                presentarAlerta("No se pudo guardar la foto. Intenta con otra imagen.")
             }
-            session.profileImageFilename = "profile.jpg"
-            true
-        } catch (e: Exception) {
-            false
         }
-    }
-
-    private fun loadProfileImage(): Bitmap? {
-        val archivo = File(filesDir, session.profileImageFilename)
-        return if (archivo.exists()) BitmapFactory.decodeFile(archivo.path) else null
     }
 
     // MARK: - Datos del usuario

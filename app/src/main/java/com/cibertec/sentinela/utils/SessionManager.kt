@@ -1,6 +1,7 @@
 package com.cibertec.sentinela.utils
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
 
 import java.text.SimpleDateFormat
@@ -12,6 +13,7 @@ class SessionManager(context: Context) {
 
     private val prefs = context.applicationContext
         .getSharedPreferences("sentinela_prefs", Context.MODE_PRIVATE)
+    private val securePinStore = SecurePinStore(context)
 
     var userToken: String?
         get() = prefs.getString("userToken", null)
@@ -39,25 +41,53 @@ class SessionManager(context: Context) {
         set(value) = prefs.edit { putString("profileImageFilename", value) }
 
     var pinSeguridad: String
-        get() = prefs.getString("pinSeguridad", "1234") ?: "1234"
-        set(value) = prefs.edit { putString("pinSeguridad", value) }
+        get() = securePinStore.get("pinSeguridad", userId)
+        set(value) = securePinStore.set("pinSeguridad", userId, value)
 
     var pinCoaccion: String
-        get() = prefs.getString("pinCoaccion", "9999") ?: "9999"
-        set(value) = prefs.edit { putString("pinCoaccion", value) }
+        get() = securePinStore.get("pinCoaccion", userId)
+        set(value) = securePinStore.set("pinCoaccion", userId, value)
+
+    var pinsConfigured: Boolean
+        get() = prefs.getBoolean("pinsConfigured", false)
+        set(value) = prefs.edit { putBoolean("pinsConfigured", value) }
+
+    /** El tutorial se registra por cuenta para no repetirlo en cada inicio. */
+    var tutorialSentinelaVisto: Boolean
+        get() = prefs.getBoolean("tutorialSentinelaVisto_$userId", false)
+        set(value) = prefs.edit { putBoolean("tutorialSentinelaVisto_$userId", value) }
 
     var shakeEnabled: Boolean
         get() = prefs.getBoolean("shakeEnabled", true)
         set(value) = prefs.edit { putBoolean("shakeEnabled", value) }
 
+    /** Tema de la app: MODE_NIGHT_NO (claro), MODE_NIGHT_YES (oscuro) o MODE_NIGHT_FOLLOW_SYSTEM (por defecto). */
+    var themeMode: Int
+        get() = prefs.getInt("themeMode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        set(value) = prefs.edit { putInt("themeMode", value) }
+
     var mapDarkTheme: Boolean
         get() = prefs.getBoolean("mapDarkTheme", false)
         set(value) = prefs.edit { putBoolean("mapDarkTheme", value) }
+
+    fun mapDarkThemeFor(context: Context): Boolean {
+        if (prefs.contains("mapDarkTheme")) return mapDarkTheme
+        val nightMode = context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+        return nightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+    }
 
     /** Plan actual: "FREE", "PRO" o "FAMILIA" */
     var planSuscripcion: String
         get() = prefs.getString("planSuscripcion", "FREE") ?: "FREE"
         set(value) = prefs.edit { putString("planSuscripcion", value) }
+
+    var serverIp: String
+        get() = prefs.getString("serverIp", "192.168.1.34") ?: "192.168.1.34"
+        set(value) = prefs.edit { putString("serverIp", value) }
+
+    var ultimoServidorConectado: String
+        get() = prefs.getString("ultimoServidorConectado", "") ?: ""
+        set(value) = prefs.edit { putString("ultimoServidorConectado", value) }
 
     private fun obtenerFechaHoy(): String {
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
@@ -122,9 +152,16 @@ class SessionManager(context: Context) {
         planSuscripcion = nuevoPlan
     }
 
-    fun cerrarSesion() = prefs.edit {
-        remove("userToken")
-        remove("userId")
+    fun cerrarSesion() {
+        // Al leerlos se migran a almacenamiento cifrado antes de retirar la sesión.
+        if (userId > 0) {
+            pinSeguridad
+            pinCoaccion
+        }
+        prefs.edit {
+            remove("userToken")
+            remove("userId")
+            remove("pinsConfigured")
+        }
     }
 }
-
