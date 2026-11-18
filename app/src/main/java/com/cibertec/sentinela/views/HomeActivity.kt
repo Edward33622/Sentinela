@@ -36,6 +36,7 @@ import com.cibertec.sentinela.models.FamilyPingRequest
 import com.cibertec.sentinela.services.ApiClient
 import com.cibertec.sentinela.services.realizarPeticion
 import com.cibertec.sentinela.utils.BatteryMonitor
+import com.cibertec.sentinela.utils.RutaSegura
 import com.cibertec.sentinela.utils.SessionManager
 import com.cibertec.sentinela.utils.SentinelaToast
 import com.cibertec.sentinela.utils.presentarAlerta
@@ -44,18 +45,10 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -69,66 +62,10 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 class HomeActivity : AppCompatActivity() {
 
-    private data class RouteResult(val points: List<GeoPoint>, val isApproximate: Boolean)
-
     companion object {
         const val EXTRA_USUARIO = "usuarioSesion"
         const val EXTRA_TRIGGER_EMERGENCY = "TriggerSentinelaEmergency"
         private const val TAG = "HomeActivity"
-
-        // Coordenadas céntricas de los distritos de Lima y Callao para autodetección por GPS y trazado vial
-        val COORDENADAS_DISTRITOS = mapOf(
-            "San Miguel (Lima)" to GeoPoint(-12.0772, -77.0863),
-            "Miraflores (Lima)" to GeoPoint(-12.1211, -77.0297),
-            "San Isidro (Lima)" to GeoPoint(-12.0984, -77.0353),
-            "Santiago de Surco (Lima)" to GeoPoint(-12.1456, -76.9944),
-            "San Borja (Lima)" to GeoPoint(-12.0911, -77.0019),
-            "Cercado de Lima" to GeoPoint(-12.0464, -77.0428),
-            "Los Olivos (Lima)" to GeoPoint(-11.9932, -77.0716),
-            "Jesús María (Lima)" to GeoPoint(-12.0722, -77.0494),
-            "Magdalena del Mar (Lima)" to GeoPoint(-12.0906, -77.0706),
-            "Pueblo Libre (Lima)" to GeoPoint(-12.0769, -77.0658),
-            "Lince (Lima)" to GeoPoint(-12.0831, -77.0344),
-            "Surquillo (Lima)" to GeoPoint(-12.1122, -77.0142),
-            "Barranco (Lima)" to GeoPoint(-12.1469, -77.0206),
-            "Chorrillos (Lima)" to GeoPoint(-12.1764, -77.0147),
-            "La Molina (Lima)" to GeoPoint(-12.0886, -76.9458),
-            "Ate (Lima)" to GeoPoint(-12.0289, -76.9189),
-            "San Juan de Lurigancho (Lima)" to GeoPoint(-11.9792, -77.0056),
-            "San Juan de Miraflores (Lima)" to GeoPoint(-12.1625, -76.9633),
-            "Villa El Salvador (Lima)" to GeoPoint(-12.2136, -76.9367),
-            "Villa María del Triunfo (Lima)" to GeoPoint(-12.1611, -76.9389),
-            "Comas (Lima)" to GeoPoint(-11.9369, -77.0519),
-            "Independencia (Lima)" to GeoPoint(-11.9908, -77.0539),
-            "San Martín de Porres (Lima)" to GeoPoint(-12.0167, -77.0833),
-            "Carabayllo (Lima)" to GeoPoint(-11.8986, -77.0347),
-            "Puente Piedra (Lima)" to GeoPoint(-11.8672, -77.0758),
-            "Rímac (Lima)" to GeoPoint(-12.0328, -77.0272),
-            "Breña (Lima)" to GeoPoint(-12.0578, -77.0514),
-            "La Victoria (Lima)" to GeoPoint(-12.0658, -77.0144),
-            "El Agustino (Lima)" to GeoPoint(-12.0517, -77.0017),
-            "Santa Anita (Lima)" to GeoPoint(-12.0469, -76.9694),
-            "Lurín (Lima)" to GeoPoint(-12.2756, -76.8711),
-            "Pachacámac (Lima)" to GeoPoint(-12.2300, -76.8600),
-            "Chaclacayo (Lima)" to GeoPoint(-11.9806, -76.7681),
-            "Chosica / Lurigancho (Lima)" to GeoPoint(-11.9392, -76.7083),
-            "Bellavista (Callao)" to GeoPoint(-12.0608, -77.1264),
-            "Callao (Cercado)" to GeoPoint(-12.0565, -77.1181),
-            "La Perla (Callao)" to GeoPoint(-12.0717, -77.1172),
-            "La Punta (Callao)" to GeoPoint(-12.0728, -77.1611),
-            "Carmen de la Legua (Callao)" to GeoPoint(-12.0442, -77.0944),
-            "Ventanilla (Callao)" to GeoPoint(-11.8667, -77.1333),
-            "Mi Perú (Callao)" to GeoPoint(-11.8542, -77.1189),
-            "Ancón (Lima)" to GeoPoint(-11.7733, -77.1761),
-            "Pucusana (Lima)" to GeoPoint(-12.4833, -76.7833),
-            "Punta Hermosa (Lima)" to GeoPoint(-12.3333, -76.8167),
-            "Punta Negra (Lima)" to GeoPoint(-12.3667, -76.7833),
-            "San Bartolo (Lima)" to GeoPoint(-12.3833, -76.7667),
-            "Santa María del Mar (Lima)" to GeoPoint(-12.4000, -76.7667),
-            "Santa Rosa (Lima)" to GeoPoint(-11.8000, -77.1667),
-            "Cieneguilla (Lima)" to GeoPoint(-12.0833, -76.7667),
-            "San Luis (Lima)" to GeoPoint(-12.0750, -77.0000)
-        )
     }
 
     private lateinit var binding: ActivityHomeBinding
@@ -179,6 +116,20 @@ class HomeActivity : AppCompatActivity() {
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
     }
+
+    // El Copiloto IA devuelve el trayecto elegido: se dibuja la ruta aquí y se activa el temporizador
+    private val copilotoLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { resultado ->
+            val datos = resultado.data
+            if (resultado.resultCode != RESULT_OK || datos == null) return@registerForActivityResult
+            val origen = datos.getStringExtra(CopilotoIaActivity.EXTRA_ORIGEN).orEmpty()
+            val destino = datos.getStringExtra(CopilotoIaActivity.EXTRA_DESTINO).orEmpty()
+            val medio = datos.getStringExtra(CopilotoIaActivity.EXTRA_MEDIO).orEmpty()
+            val minutos = datos.getIntExtra(CopilotoIaActivity.EXTRA_MINUTOS, 15)
+            val riesgo = datos.getStringExtra(CopilotoIaActivity.EXTRA_RIESGO).orEmpty()
+            trazarRutaSemaforoEnMapa(origen, destino, medio, riesgo, esInviable = false)
+            iniciarTimerTrayecto(minutos, origen, destino, medio)
+        }
 
     private val permisosLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultado ->
@@ -243,7 +194,10 @@ class HomeActivity : AppCompatActivity() {
         binding.btnDesactivar.setOnClickListener { it.feedbackHaptico(); funcionBtnDesactivar() }
         binding.btnAgregarContacto.setOnClickListener { funcionBtnAgregarContacto() }
         binding.btnHistorial.setOnClickListener { startActivity(Intent(this, EmergencyHistoryActivity::class.java)) }
-        binding.btnAsistenteIa.setOnClickListener { it.feedbackHaptico(); mostrarDialogoAsistenteIa() }
+        binding.btnAsistenteIa.setOnClickListener {
+            it.feedbackHaptico()
+            copilotoLauncher.launch(Intent(this, CopilotoIaActivity::class.java))
+        }
         binding.btnTrayectoSeguro.setOnClickListener { it.feedbackHaptico(); mostrarDialogoTrayectoSeguro() }
         binding.btnFinalizarTrayecto.setOnClickListener { it.feedbackHaptico(); finalizarTrayectoSeguro() }
         binding.btnFamilia.setOnClickListener {
@@ -737,11 +691,11 @@ class HomeActivity : AppCompatActivity() {
         trayectoOrigenActual = origen
         trayectoDestinoActual = destino
         trayectoMedioActual = medio
-        binding.lblDestinoTrayecto.text = "Destino: ${nombreDestinoVisible(destino)}"
-        binding.lblDestinoMapa.text = "Destino confirmado · ${nombreDestinoVisible(destino)}"
+        binding.lblDestinoTrayecto.text = "Destino: ${RutaSegura.nombreDestinoVisible(destino)}"
+        binding.lblDestinoMapa.text = "Destino confirmado · ${RutaSegura.nombreDestinoVisible(destino)}"
         actualizarEstadoRuta("Trayecto activo · monitoreo en curso")
-        puntoOrigenTrayecto = resolverCoordenadaLugar(origen)
-        puntoDestinoTrayecto = resolverCoordenadaLugar(destino)
+        puntoOrigenTrayecto = RutaSegura.resolverCoordenadaLugar(origen)
+        puntoDestinoTrayecto = RutaSegura.resolverCoordenadaLugar(destino)
         ultimaUbicacionTrayecto = null
         segundosInmovil = 0
         desvioAlertaDisparada = false
@@ -750,12 +704,12 @@ class HomeActivity : AppCompatActivity() {
         // Si no se había obtenido la ruta vial real por pistas, consultarla para el monitoreo
         if (puntoOrigenTrayecto != null && puntoDestinoTrayecto != null) {
             lifecycleScope.launch {
-                val route = obtenerRutaCallesReal(puntoOrigenTrayecto!!, puntoDestinoTrayecto!!, medio)
+                val route = RutaSegura.obtenerRutaCallesReal(puntoOrigenTrayecto!!, puntoDestinoTrayecto!!, medio)
                 rutaPuntosActuales = route.points
                 if (timerTrayecto?.let { binding.bannerTrayecto.visibility == android.view.View.VISIBLE } == true) {
                     actualizarEstadoRuta(
                         if (route.isApproximate) "Ruta aproximada · el servicio de calles no respondió"
-                        else "Ruta vial disponible · ${nombreDestinoVisible(destino)}"
+                        else "Ruta vial disponible · ${RutaSegura.nombreDestinoVisible(destino)}"
                     )
                 }
             }
@@ -843,13 +797,6 @@ class HomeActivity : AppCompatActivity() {
         actualizarEstadoRuta("Sin trayecto activo")
         binding.mapView.invalidate()
     }
-
-    private fun nombreDestinoVisible(destino: String): String =
-        if (destino.contains("CIUDAD DE DIOS", ignoreCase = true)) {
-            "Mercado Ciudad de Dios · San Juan de Miraflores"
-        } else {
-            destino
-        }
 
     // MARK: - D. Detección Inteligente de Desvíos e Inmovilidad
 
@@ -1017,69 +964,6 @@ class HomeActivity : AppCompatActivity() {
 
     // MARK: - A. Autodetección de Distrito y B. Trazado de Ruta en Mapa
 
-    private fun buscarDistritoMasCercano(lat: Double, lng: Double): Pair<String?, Float> {
-        var masCercano: String? = null
-        var menorDistancia = Float.MAX_VALUE
-        val results = FloatArray(1)
-
-        for ((distrito, geo) in COORDENADAS_DISTRITOS) {
-            Location.distanceBetween(lat, lng, geo.latitude, geo.longitude, results)
-            val d = results[0]
-            if (d < menorDistancia) {
-                menorDistancia = d
-                masCercano = distrito
-            }
-        }
-        return Pair(masCercano, menorDistancia)
-    }
-
-    private fun resolverCoordenadaLugar(lugar: String): GeoPoint {
-        val lugarUpper = lugar.uppercase().trim()
-
-        // 1. Coincidencia directa en distritos
-        COORDENADAS_DISTRITOS[lugar]?.let { return it }
-
-        // Priorizar el mercado Ciudad de Dios de San Juan de Miraflores sobre localidades homónimas.
-        if (lugarUpper.contains("CIUDAD DE DIOS")) {
-            return GeoPoint(-12.15274, -76.97094)
-        }
-
-        // 2. Coincidencia parcial con distritos
-        for ((distrito, geo) in COORDENADAS_DISTRITOS) {
-            val nombreBase = distrito.substringBefore(" (").uppercase()
-            if (lugarUpper.contains(nombreBase)) {
-                return geo
-            }
-        }
-
-        // 3. Atajos conocidos
-        when {
-            lugarUpper.contains("CIBERTEC") -> return GeoPoint(-12.1221, -77.0305) // Cibertec Miraflores
-            lugarUpper.contains("CASA") -> return GeoPoint(-12.0984, -77.0353) // San Isidro
-            lugarUpper.contains("TRABAJO") || lugarUpper.contains("OFICINA") -> return GeoPoint(-12.0911, -77.0019) // San Borja
-            lugarUpper.contains("COMERCIAL") || lugarUpper.contains("MALL") -> return GeoPoint(-12.0860, -77.0030)
-            // Provincias principales del Perú
-            lugarUpper.contains("TUMBES") -> return GeoPoint(-3.5669, -80.4515)
-            lugarUpper.contains("PIURA") -> return GeoPoint(-5.1945, -80.6328)
-            lugarUpper.contains("CHICLAYO") || lugarUpper.contains("LAMBAYEQUE") -> return GeoPoint(-6.7714, -79.8409)
-            lugarUpper.contains("TRUJILLO") || lugarUpper.contains("LIBERTAD") -> return GeoPoint(-8.1117, -79.0287)
-            lugarUpper.contains("CHIMBOTE") || lugarUpper.contains("ANCASH") -> return GeoPoint(-9.0744, -78.5936)
-            lugarUpper.contains("HUARAZ") -> return GeoPoint(-9.5261, -77.5289)
-            lugarUpper.contains("ICA") || lugarUpper.contains("CHINCHA") || lugarUpper.contains("PISCO") -> return GeoPoint(-14.0678, -75.7286)
-            lugarUpper.contains("AREQUIPA") -> return GeoPoint(-16.4090, -71.5375)
-            lugarUpper.contains("CUSCO") || lugarUpper.contains("CUZCO") -> return GeoPoint(-13.5319, -71.9675)
-            lugarUpper.contains("TACNA") -> return GeoPoint(-18.0146, -70.2536)
-            lugarUpper.contains("PUNO") || lugarUpper.contains("JULIACA") -> return GeoPoint(-15.8422, -70.0199)
-            lugarUpper.contains("HUANCAYO") || lugarUpper.contains("JUNIN") -> return GeoPoint(-12.0651, -75.2049)
-            lugarUpper.contains("AYACUCHO") -> return GeoPoint(-13.1588, -74.2239)
-            lugarUpper.contains("TARAPOTO") || lugarUpper.contains("SAN MARTIN") -> return GeoPoint(-6.4854, -76.3686)
-            lugarUpper.contains("IQUITOS") || lugarUpper.contains("LORETO") -> return GeoPoint(-3.7491, -73.2538)
-        }
-
-        // 4. Default: Centro de Lima
-        return GeoPoint(-12.0464, -77.0428)
-    }
-
     private fun calcularDistanciaMinimaARutaMetros(posicion: GeoPoint, ruta: List<GeoPoint>): Double {
         if (ruta.isEmpty()) return 0.0
         if (ruta.size == 1) {
@@ -1097,82 +981,6 @@ class HomeActivity : AppCompatActivity() {
         return minDist
     }
 
-    private suspend fun obtenerRutaCallesReal(inicio: GeoPoint, fin: GeoPoint, medio: String): RouteResult = withContext(Dispatchers.IO) {
-        val modo = if (medio.contains("pie", ignoreCase = true)) "foot" else "driving"
-        val urlStr = "https://router.project-osrm.org/route/v1/$modo/${inicio.longitude},${inicio.latitude};${fin.longitude},${fin.latitude}?overview=full&geometries=geojson"
-
-        try {
-            val url = URL(urlStr)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.connectTimeout = 8000
-            conn.readTimeout = 8000
-            conn.setRequestProperty("User-Agent", "SentinelaApp/1.0 (Android; OpenStreetMap)")
-
-            if (conn.responseCode == 200) {
-                val reader = BufferedReader(InputStreamReader(conn.inputStream))
-                val sb = StringBuilder()
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    sb.append(line)
-                }
-                reader.close()
-
-                val root = JSONObject(sb.toString())
-                val routes = root.optJSONArray("routes")
-                if (routes != null && routes.length() > 0) {
-                    val geometry = routes.getJSONObject(0).optJSONObject("geometry")
-                    val coords = geometry?.optJSONArray("coordinates")
-                    if (coords != null && coords.length() > 0) {
-                        val puntosViales = mutableListOf<GeoPoint>()
-                        for (i in 0 until coords.length()) {
-                            val par = coords.getJSONArray(i)
-                            val lon = par.getDouble(0)
-                            val lat = par.getDouble(1)
-                            puntosViales.add(GeoPoint(lat, lon))
-                        }
-                        if (puntosViales.size >= 2) {
-                            return@withContext RouteResult(puntosViales, isApproximate = false)
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "No se pudo consultar enrutador OSRM en tiempo real: ${e.message}")
-        }
-
-        return@withContext RouteResult(generarPuntosCorredor(inicio, fin), isApproximate = true)
-    }
-
-    private fun generarPuntosCorredor(inicio: GeoPoint, fin: GeoPoint): List<GeoPoint> {
-        val puntos = mutableListOf<GeoPoint>()
-        puntos.add(inicio)
-
-        val results = FloatArray(1)
-        Location.distanceBetween(inicio.latitude, inicio.longitude, fin.latitude, fin.longitude, results)
-        val distMetros = results[0]
-
-        if (distMetros > 80_000) {
-            val pasos = 8
-            for (i in 1 until pasos) {
-                val frac = i.toDouble() / pasos
-                val lat = inicio.latitude + (fin.latitude - inicio.latitude) * frac
-                val lon = inicio.longitude + (fin.longitude - inicio.longitude) * frac
-                puntos.add(GeoPoint(lat, lon))
-            }
-        } else {
-            val pasos = 5
-            for (i in 1 until pasos) {
-                val frac = i.toDouble() / pasos
-                val lat = inicio.latitude + (fin.latitude - inicio.latitude) * frac
-                val lon = inicio.longitude + (fin.longitude - inicio.longitude) * frac
-                puntos.add(GeoPoint(lat, lon))
-            }
-        }
-
-        puntos.add(fin)
-        return puntos
-    }
-
     private fun trazarRutaSemaforoEnMapa(
         origen: String,
         destino: String,
@@ -1180,8 +988,8 @@ class HomeActivity : AppCompatActivity() {
         nivelRiesgo: String,
         esInviable: Boolean
     ) {
-        binding.lblDestinoMapa.text = "Destino confirmado · ${nombreDestinoVisible(destino)}"
-        actualizarEstadoRuta("Consultando calles para ${nombreDestinoVisible(destino)}…")
+        binding.lblDestinoMapa.text = "Destino confirmado · ${RutaSegura.nombreDestinoVisible(destino)}"
+        actualizarEstadoRuta("Consultando calles para ${RutaSegura.nombreDestinoVisible(destino)}…")
 
         // 1. Limpiar polilíneas y pines previos de rutas anteriores
         rutaPolylineOverlay?.let { binding.mapView.overlays.remove(it) }
@@ -1193,32 +1001,18 @@ class HomeActivity : AppCompatActivity() {
         val pOrigen = if (locationOverlay?.myLocation != null && (origen.contains("Lima", ignoreCase = true) || origen.contains("actual", ignoreCase = true))) {
             val distAlGps = FloatArray(1)
             val gps = locationOverlay!!.myLocation
-            val coordsDistrito = resolverCoordenadaLugar(origen)
+            val coordsDistrito = RutaSegura.resolverCoordenadaLugar(origen)
             Location.distanceBetween(gps.latitude, gps.longitude, coordsDistrito.latitude, coordsDistrito.longitude, distAlGps)
             if (distAlGps[0] < 5000) gps else coordsDistrito
         } else {
-            resolverCoordenadaLugar(origen)
+            RutaSegura.resolverCoordenadaLugar(origen)
         }
 
         // 3. Determinar punto de destino
-        val pDestino = resolverCoordenadaLugar(destino)
+        val pDestino = RutaSegura.resolverCoordenadaLugar(destino)
 
         // 4. Semáforo de Riesgo (🟢 Verde, 🟡 Amarillo, 🔴 Rojo)
-        val (colorHex, etiquetaSemaforo, detalleRiesgo) = when {
-            esInviable || nivelRiesgo.contains("ALTO", ignoreCase = true) ||
-            nivelRiesgo.contains("EXTREMO", ignoreCase = true) ||
-            nivelRiesgo.contains("ROJO", ignoreCase = true) -> {
-                Triple("#EF4444", "🔴 Tramo de Alto Riesgo", "Zonas desoladas no recomendadas de noche o inviables")
-            }
-            nivelRiesgo.contains("MODERADO", ignoreCase = true) ||
-            nivelRiesgo.contains("MEDIO", ignoreCase = true) ||
-            nivelRiesgo.contains("AMARILLO", ignoreCase = true) -> {
-                Triple("#F59E0B", "🟡 Tramo con Precaución", "Congestión vehicular y paraderos con arrebatos")
-            }
-            else -> {
-                Triple("#10B981", "🟢 Vía Segura Iluminada", "Avenidas principales con cámaras e iluminación activa")
-            }
-        }
+        val (colorHex, etiquetaSemaforo, detalleRiesgo) = RutaSegura.semaforo(nivelRiesgo, esInviable)
 
         // 5. Pines / Marcadores de inicio y llegada con semáforo y diseño personalizado
         val pinOrigen = Marker(binding.mapView).apply {
@@ -1226,14 +1020,14 @@ class HomeActivity : AppCompatActivity() {
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "🚩 Origen: $origen"
             snippet = "Punto de partida del viaje"
-            icon = crearIconoMarcador("🚩", Color.parseColor("#10B981"))
+            icon = RutaSegura.crearIconoMarcador(this@HomeActivity, "🚩", Color.parseColor("#10B981"))
         }
         val pinDestino = Marker(binding.mapView).apply {
             position = pDestino
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "🏁 Destino: $destino"
             snippet = "$etiquetaSemaforo\n$detalleRiesgo"
-            icon = crearIconoMarcador("🏁", Color.parseColor(colorHex))
+            icon = RutaSegura.crearIconoMarcador(this@HomeActivity, "🏁", Color.parseColor(colorHex))
         }
         binding.mapView.overlays.add(pinOrigen)
         binding.mapView.overlays.add(pinDestino)
@@ -1243,7 +1037,7 @@ class HomeActivity : AppCompatActivity() {
         // 6. Consultar la ruta vial real por las pistas de OpenStreetMap (OSRM)
         val generation = ++routeRequestGeneration
         lifecycleScope.launch {
-            val route = obtenerRutaCallesReal(pOrigen, pDestino, medio)
+            val route = RutaSegura.obtenerRutaCallesReal(pOrigen, pDestino, medio)
             if (generation != routeRequestGeneration || isFinishing || isDestroyed) return@launch
             val puntosViales = route.points
             rutaPuntosActuales = puntosViales
@@ -1286,424 +1080,6 @@ class HomeActivity : AppCompatActivity() {
             SentinelaToast.Type.SUCCESS,
             SentinelaToast.Length.LONG
         )
-    }
-
-    // MARK: - Asistente IA de Evaluación de Riesgo (CU15)
-
-    private fun mostrarDialogoAsistenteIa() {
-        if (!session.puedeUsarIa()) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("🤖 Límite Diario de IA Alcanzado (4/4)")
-                .setMessage("Has completado tus 4 análisis de ruta gratuitos de hoy con Sentinela Free.\n\nTu cuota diaria se reinicia automáticamente cada medianoche (00:00 hrs). Actualiza a Sentinela Pro para disfrutar de consultas ilimitadas con Gemini AI y el Modo Acompañante Seguro.")
-                .setPositiveButton("Ver Planes Pro") { _, _ ->
-                    startActivity(Intent(this, SuscripcionActivity::class.java))
-                }
-                .setNegativeButton("Entendido", null)
-                .show()
-            return
-        }
-
-        val distritosLimaCallao = arrayOf(
-            "San Miguel (Lima)", "Miraflores (Lima)", "San Isidro (Lima)", "Santiago de Surco (Lima)",
-            "San Borja (Lima)", "Cercado de Lima", "Los Olivos (Lima)", "Jesús María (Lima)",
-            "Magdalena del Mar (Lima)", "Pueblo Libre (Lima)", "Lince (Lima)", "Surquillo (Lima)",
-            "Barranco (Lima)", "Chorrillos (Lima)", "La Molina (Lima)", "Ate (Lima)",
-            "San Juan de Lurigancho (Lima)", "San Juan de Miraflores (Lima)", "Villa El Salvador (Lima)",
-            "Villa María del Triunfo (Lima)", "Comas (Lima)", "Independencia (Lima)",
-            "San Martín de Porres (Lima)", "Carabayllo (Lima)", "Puente Piedra (Lima)",
-            "Rímac (Lima)", "Breña (Lima)", "La Victoria (Lima)", "El Agustino (Lima)",
-            "Santa Anita (Lima)", "Lurín (Lima)", "Pachacámac (Lima)", "Chaclacayo (Lima)",
-            "Chosica / Lurigancho (Lima)", "Bellavista (Callao)", "Callao (Cercado)",
-            "La Perla (Callao)", "La Punta (Callao)", "Carmen de la Legua (Callao)",
-            "Ventanilla (Callao)", "Mi Perú (Callao)", "Ancón (Lima)", "Pucusana (Lima)",
-            "Punta Hermosa (Lima)", "Punta Negra (Lima)", "San Bartolo (Lima)",
-            "Santa María del Mar (Lima)", "Santa Rosa (Lima)", "Cieneguilla (Lima)",
-            "San Luis (Lima)", "📍 Otra provincia o región..."
-        )
-
-        val contenedor = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(50, 20, 50, 10)
-        }
-
-        val cuotaTexto = if (session.esPro()) {
-            "✨ Plan Pro: Consultas ilimitadas con Gemini"
-        } else {
-            "⚡ Plan Free: Te quedan ${session.consultasIaRestantesDia()}/4 consultas hoy"
-        }
-
-        val tvInfoCobertura = android.widget.TextView(this).apply {
-            text = "📍 Cobertura activa: Lima Metropolitana y Callao\n$cuotaTexto"
-            textSize = 12f
-            setTextColor(ContextCompat.getColor(context, R.color.text_success))
-            setPadding(0, 0, 0, 8)
-        }
-        contenedor.addView(tvInfoCobertura)
-
-        val tvLabelOrigen = android.widget.TextView(this).apply {
-            text = "Punto de partida (Distrito de Lima / Callao):"
-            textSize = 12f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 4, 0, 4)
-        }
-        contenedor.addView(tvLabelOrigen)
-
-        val spinnerOrigen = android.widget.Spinner(this)
-        spinnerOrigen.adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, distritosLimaCallao)
-        contenedor.addView(spinnerOrigen)
-
-        // A. Autodetección del Distrito por GPS
-        fun aplicarAutodeteccionGps(lat: Double, lng: Double) {
-            val (distritoCercano, distanciaM) = buscarDistritoMasCercano(lat, lng)
-            if (distritoCercano != null && distanciaM < 35_000) {
-                val pos = distritosLimaCallao.indexOf(distritoCercano)
-                if (pos >= 0) {
-                    spinnerOrigen.setSelection(pos)
-                    tvInfoCobertura.text = "📍 GPS Autodetectado: $distritoCercano\n$cuotaTexto"
-                    tvInfoCobertura.setTextColor(ContextCompat.getColor(this@HomeActivity, R.color.text_success))
-                }
-            }
-        }
-
-        // Intento 1: Posición inmediata del overlay en pantalla
-        val locActual = locationOverlay?.myLocation
-        if (locActual != null) {
-            aplicarAutodeteccionGps(locActual.latitude, locActual.longitude)
-        } else if (tienePermisoUbicacion()) {
-            // Intento 2: FusedLocationProviderClient
-            fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-                if (loc != null) {
-                    aplicarAutodeteccionGps(loc.latitude, loc.longitude)
-                }
-            }
-        }
-
-        val txtOrigenPersonalizado = android.widget.EditText(this).apply {
-            hint = "Escribe la provincia (ej. Tumbes, Cusco, Arequipa)"
-            visibility = android.view.View.GONE
-            setSingleLine(true)
-        }
-        contenedor.addView(txtOrigenPersonalizado)
-
-        spinnerOrigen.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                if (position == distritosLimaCallao.size - 1) {
-                    txtOrigenPersonalizado.visibility = android.view.View.VISIBLE
-                } else {
-                    txtOrigenPersonalizado.visibility = android.view.View.GONE
-                }
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-        }
-
-        val tvLabelDestino = android.widget.TextView(this).apply {
-            text = "¿A dónde te diriges? (Destino):"
-            textSize = 12f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 14, 0, 2)
-        }
-        contenedor.addView(tvLabelDestino)
-
-        val txtDestino = android.widget.AutoCompleteTextView(this).apply {
-            val opcionesDestino = distritosLimaCallao +
-                    "Mercado Ciudad de Dios, San Juan de Miraflores"
-            val adapter = android.widget.ArrayAdapter(this@HomeActivity, android.R.layout.simple_dropdown_item_1line, opcionesDestino)
-            setAdapter(adapter)
-            threshold = 1
-            hint = "Ej. Miraflores, Av. Javier Prado, etc."
-            setSingleLine(true)
-        }
-        contenedor.addView(txtDestino)
-
-        // Atajos rápidos de destino
-        val layoutChips = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.HORIZONTAL
-            setPadding(0, 4, 0, 6)
-        }
-        val atajos = listOf("🎓 Cibertec", "🏠 Casa", "💼 Trabajo", "🏬 C. Comercial")
-        for (atajo in atajos) {
-            val btnChip = com.google.android.material.button.MaterialButton(
-                this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle
-            ).apply {
-                text = atajo
-                textSize = 11f
-                isAllCaps = false
-                minWidth = 0
-                minimumWidth = 0
-                minHeight = 0
-                minimumHeight = 0
-                insetTop = 0
-                insetBottom = 0
-                val dp = resources.displayMetrics.density
-                setPadding((10 * dp).toInt(), (6 * dp).toInt(), (10 * dp).toInt(), (6 * dp).toInt())
-                cornerRadius = (50 * dp).toInt()
-                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_bg))
-                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_stroke))
-                setTextColor(ContextCompat.getColor(this@HomeActivity, R.color.chip_green_text))
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { marginEnd = (6 * dp).toInt() }
-                setOnClickListener {
-                    val lugar = when (atajo) {
-                        "🎓 Cibertec" -> "Instituto Cibertec (Sede Miraflores)"
-                        "🏠 Casa" -> "Casa (Destino habitual)"
-                        "💼 Trabajo" -> "Centro Laboral / Oficina"
-                        else -> "Centro Comercial"
-                    }
-                    txtDestino.setText(lugar)
-                }
-            }
-            layoutChips.addView(btnChip)
-        }
-        contenedor.addView(layoutChips)
-
-        val tvLabelMedio = android.widget.TextView(this).apply {
-            text = "Medio de transporte:"
-            textSize = 12f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 8, 0, 4)
-        }
-        contenedor.addView(tvLabelMedio)
-
-        val spinnerMedio = android.widget.Spinner(this)
-        val opcionesMedio = arrayOf("A pie", "Taxi por aplicativo", "Transporte público", "Vehículo particular", "Bus interprovincial / Vuelo")
-        spinnerMedio.adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, opcionesMedio)
-        contenedor.addView(spinnerMedio)
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("🤖 Sentinela AI Copilot")
-            .setMessage("Consulta con Google Gemini la evaluación de riesgo, trazado vial y semáforo de seguridad:")
-            .setView(contenedor)
-            .setPositiveButton("Analizar con IA") { _, _ ->
-                val seleccionado = spinnerOrigen.selectedItem.toString()
-                val origen = if (seleccionado.startsWith("📍 Otra provincia")) {
-                    txtOrigenPersonalizado.text.toString().trim().ifEmpty { "Provincia fuera de Lima" }
-                } else {
-                    seleccionado
-                }
-                val destino = txtDestino.text.toString().trim()
-                val medio = spinnerMedio.selectedItem.toString()
-                continuarConDestino(origen, if (destino.isEmpty()) "Destino habitual" else destino, medio)
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    private fun continuarConDestino(origen: String, destino: String, medio: String) {
-        val nombreNormalizado = destino.trim().uppercase()
-        val esCiudadDeDiosAmbiguo = nombreNormalizado.contains("CIUDAD DE DIOS") &&
-                !nombreNormalizado.contains("SAN JUAN") &&
-                !nombreNormalizado.contains("MERCADO")
-
-        if (!esCiudadDeDiosAmbiguo) {
-            validarYProcesarRuta(origen, destino, medio)
-            return
-        }
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Confirma el destino")
-            .setMessage("Hay lugares con el nombre Ciudad de Dios. Elige el resultado de San Juan de Miraflores o vuelve para precisar otra localidad.")
-            .setItems(arrayOf("Mercado Ciudad de Dios · San Juan de Miraflores", "Volver y precisar el destino")) { _, choice ->
-                if (choice == 0) {
-                    validarYProcesarRuta(
-                        origen,
-                        "Mercado Ciudad de Dios, San Juan de Miraflores",
-                        medio
-                    )
-                } else {
-                    SentinelaToast.show(
-                        this,
-                        "Añade el distrito y la provincia al destino antes de continuar.",
-                        SentinelaToast.Type.WARNING,
-                        SentinelaToast.Length.LONG
-                    )
-                }
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    // MARK: - C. Sugerencia Automática de Modo de Transporte según la Hora
-
-    private fun validarYProcesarRuta(origen: String, destino: String, medio: String) {
-        val cal = java.util.Calendar.getInstance()
-        val hora = cal.get(java.util.Calendar.HOUR_OF_DAY)
-        val minuto = cal.get(java.util.Calendar.MINUTE)
-        // Pasadas las 10:30 PM (22:30) hasta las 5:30 AM
-        val esNochePeligrosa = (hora > 22 || (hora == 22 && minuto >= 30) || hora < 5 || (hora == 5 && minuto <= 30))
-
-        if (medio == "A pie" && esNochePeligrosa) {
-            val horaFormateada = String.format("%02d:%02d", hora, minuto)
-            MaterialAlertDialogBuilder(this)
-                .setTitle("⚠️ Sugerencia Automática de Seguridad")
-                .setMessage("Son las $horaFormateada hrs.\n\n⚠️ Por tu seguridad, a esta hora te recomendamos cambiar el medio a 'Taxi por aplicativo' para evitar caminar por paraderos oscuros y zonas solitarias en $origen.\n\n¿Deseas cambiar el medio de transporte o continuar a pie?")
-                .setPositiveButton("🚕 Cambiar a Taxi por aplicativo") { _, _ ->
-                    ejecutarValidacionDestinoYProcesar(origen, destino, "Taxi por aplicativo")
-                }
-                .setNegativeButton("Continuar A pie") { _, _ ->
-                    ejecutarValidacionDestinoYProcesar(origen, destino, "A pie")
-                }
-                .setNeutralButton("Cancelar", null)
-                .show()
-            return
-        }
-
-        ejecutarValidacionDestinoYProcesar(origen, destino, medio)
-    }
-
-    private fun ejecutarValidacionDestinoYProcesar(origen: String, destino: String, medio: String) {
-        val provinciasFuera = listOf(
-            "TUMBES", "PIURA", "LAMBAYEQUE", "CHICLAYO", "TRUJILLO", "LA LIBERTAD",
-            "CHIMBOTE", "HUARAZ", "ANCASH", "ICA", "CHINCHA", "PISCO", "NAZCA",
-            "AREQUIPA", "MOQUEGUA", "ILO", "TACNA", "CAJAMARCA", "AMAZONAS",
-            "TARAPOTO", "LORETO", "IQUITOS", "UCAYALI", "PUCALLPA", "MADRE DE DIOS",
-            "CUSCO", "CUZCO", "PUNO", "JULIACA", "HUANUCO", "PASCO", "JUNIN", "HUANCAYO",
-            "AYACUCHO", "APURIMAC"
-        )
-
-        val origenUpper = origen.uppercase()
-        val destinoUpper = destino.uppercase()
-
-        val origenEsProvincia = provinciasFuera.any { origenUpper.contains(it) } || origen.contains("fuera de Lima", ignoreCase = true)
-        val destinoEsProvincia = provinciasFuera.any { destinoUpper.contains(it) }
-
-        if (origenEsProvincia) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("⚠️ Origen Fuera de Rango Metropolitano")
-                .setMessage("El punto de partida '$origen' se encuentra fuera de la cobertura urbana activa de Sentinela (Lima Metropolitana y Callao).\n\n¿Deseas consultar el análisis de riesgo de la IA de todas formas?")
-                .setPositiveButton("Continuar con IA") { _, _ ->
-                    procesarConsultaIa(origen, destino, medio)
-                }
-                .setNegativeButton("Cambiar origen") { _, _ ->
-                    mostrarDialogoAsistenteIa()
-                }
-                .show()
-            return
-        }
-
-        if (destinoEsProvincia && medio == "A pie") {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("🚫 Destino Fuera de Rango e Inviable a Pie")
-                .setMessage("El destino '$destino' se encuentra a cientos de kilómetros en otra provincia.\n\nEs físicamente imposible y de riesgo extremo viajar a pie. Consultaremos a Google Gemini para darte los datos oficiales de distancia y alternativas seguras.")
-                .setPositiveButton("Consultar Informe IA") { _, _ ->
-                    procesarConsultaIa(origen, destino, medio)
-                }
-                .setNegativeButton("Cambiar Destino") { _, _ ->
-                    mostrarDialogoAsistenteIa()
-                }
-                .show()
-            return
-        }
-
-        procesarConsultaIa(origen, destino, medio)
-    }
-
-    private fun procesarConsultaIa(origen: String, destino: String, medio: String) {
-        val horaActual = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-        val minutoActual = java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE)
-        val horaTexto = String.format("%02d:%02d", horaActual, minutoActual)
-        binding.lblDestinoMapa.text = "Destino solicitado · ${nombreDestinoVisible(destino)}"
-        actualizarEstadoRuta("Analizando destino y seguridad de la ruta…")
-
-        val dialogoCarga = MaterialAlertDialogBuilder(this)
-            .setTitle("🤖 Consultando Google Gemini AI...")
-            .setMessage("Evaluando coherencia geográfica, horario ($horaTexto) y ruta hacia $destino...")
-            .setCancelable(false)
-            .show()
-
-        lifecycleScope.launch {
-            val req = com.cibertec.sentinela.models.AnalyzeRouteRequest(
-                origin = origen,
-                destination = destino,
-                transport = medio,
-                hour = horaTexto
-            )
-
-            val resultado = realizarPeticion { ApiClient.ai.analizarRuta(req) }
-            dialogoCarga.dismiss()
-
-            resultado.onSuccess { res ->
-                session.registrarConsultaIa()
-                actualizarCardEstadoSeguridad()
-                val nivelRiesgo = res.riskLevel ?: "🟡 RIESGO MODERADO"
-                val titulo = "✨ Sentinela IA con Google Gemini ($nivelRiesgo)"
-                val textoAnalisis = res.analysis ?: "Sin información disponible."
-                val minutos = res.suggestedMinutes
-                val esInviable = res.isFeasible == false || minutos > 300
-
-                // B. Trazado del Semáforo de Riesgo sobre pistas reales en el Mapa de Sentinela
-                trazarRutaSemaforoEnMapa(origen, destino, medio, nivelRiesgo, esInviable)
-
-                val tiempoFormateado = when {
-                    minutos >= 1440 -> "${minutos / 1440} días y ${(minutos % 1440) / 60} horas (~${minutos} min)"
-                    minutos >= 60 -> "${minutos / 60} h ${minutos % 60} min (${minutos} min)"
-                    else -> "$minutos minutos"
-                }
-
-                val distanciaTexto = if (!res.estimatedDistance.isNullOrBlank()) "\n📏 Distancia calculada: ${res.estimatedDistance}" else ""
-                val tiempoTexto = "\n⏱️ Tiempo estimado: $tiempoFormateado"
-                val badgeIa = if (res.poweredByGemini) "\n\n🟢 Análisis oficial impulsado por Google Gemini AI (Modelo Flash)\n🚦 Trazado vial seguro sobre avenidas reales y semáforo de riesgo activos en el mapa." else "\n\n⚠️ Modo Local Preventivo (Sin conexión con Gemini AI)"
-
-                val mensajeCompleto = "$textoAnalisis\n$distanciaTexto$tiempoTexto$badgeIa"
-
-                val dialog = MaterialAlertDialogBuilder(this@HomeActivity)
-                    .setTitle(titulo)
-                    .setMessage(mensajeCompleto)
-
-                if (esInviable) {
-                    dialog.setPositiveButton("Entendido (Ruta no iniciable)", null)
-                } else {
-                    dialog.setPositiveButton("Iniciar Trayecto Seguro ($minutos min)") { _, _ ->
-                        iniciarTimerTrayecto(minutos, origen, destino, medio)
-                    }
-                    dialog.setNeutralButton("📲 Avisar por WhatsApp") { _, _ ->
-                        compartirRutaPorWhatsApp(origen, destino, medio, tiempoFormateado, nivelRiesgo)
-                    }
-                    dialog.setNegativeButton("Ver en Mapa", null)
-                }
-                dialog.show()
-            }.onFailure { err ->
-                actualizarEstadoRuta("No se pudo conectar para analizar la ruta. Revisa internet e inténtalo de nuevo.")
-                MaterialAlertDialogBuilder(this@HomeActivity)
-                    .setTitle("⚠️ Error al Conectar con Sentinela IA")
-                    .setMessage("No se pudo obtener la evaluación en tiempo real de Google Gemini (${err.localizedMessage ?: "Tiempo de espera agotado"}).\n\nPor favor verifica tu conexión a internet o el servicio de Sentinela y vuelve a intentar.")
-                    .setPositiveButton("Reintentar") { _, _ ->
-                        procesarConsultaIa(origen, destino, medio)
-                    }
-                    .setNegativeButton("Cerrar", null)
-                    .show()
-            }
-        }
-    }
-
-    private fun compartirRutaPorWhatsApp(origen: String, destino: String, medio: String, tiempo: String, riesgo: String) {
-        val mensaje = """
-            🛡️ Sentinela - Trayecto Seguro en curso:
-            • Origen: $origen
-            • Destino: $destino
-            • Transporte: $medio
-            • Tiempo estimado por IA: $tiempo
-            • Evaluación: $riesgo
-            
-            Mi desplazamiento está siendo supervisado por la app Sentinela.
-        """.trimIndent()
-
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, mensaje)
-            `package` = "com.whatsapp"
-        }
-
-        try {
-            startActivity(intent)
-        } catch (_: Exception) {
-            val shareGeneral = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, mensaje)
-            }
-            startActivity(Intent.createChooser(shareGeneral, "Compartir ruta segura"))
-        }
     }
 
     // MARK: - Llamada Simulada (Fake Call) y SOS Perú
@@ -1876,50 +1252,6 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun crearIconoMarcador(icono: String, colorFondo: Int): android.graphics.drawable.Drawable {
-        val density = resources.displayMetrics.density
-        val size = (42 * density).toInt()
-        val bitmap = Bitmap.createBitmap(size, (size * 1.25f).toInt(), Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-        // Sombra suave inferior
-        paint.color = Color.argb(50, 0, 0, 0)
-        canvas.drawCircle(size / 2f, size / 2f + 2 * density, size / 2f - 2 * density, paint)
-
-        // Círculo principal con color de riesgo
-        paint.color = colorFondo
-        paint.style = Paint.Style.FILL
-        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 3 * density, paint)
-
-        // Borde blanco moderno
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2.5f * density
-        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 3 * density, paint)
-
-        // Puntero / triángulo inferior hacia la calle
-        paint.style = Paint.Style.FILL
-        paint.color = colorFondo
-        val path = Path().apply {
-            moveTo(size / 2f - 6 * density, size / 2f + 11 * density)
-            lineTo(size / 2f + 6 * density, size / 2f + 11 * density)
-            lineTo(size / 2f, size * 1.2f)
-            close()
-        }
-        canvas.drawPath(path, paint)
-
-        // Emoji o símbolo interior
-        paint.color = Color.WHITE
-        paint.textSize = 17 * density
-        paint.textAlign = Paint.Align.CENTER
-        val yPos = (size / 2f - (paint.descent() + paint.ascent()) / 2)
-        canvas.drawText(icono, size / 2f, yPos, paint)
-
-        return BitmapDrawable(resources, bitmap)
     }
 
     private fun android.view.View.feedbackHaptico() {
