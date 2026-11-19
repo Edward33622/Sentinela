@@ -15,12 +15,14 @@ class ShakeDetector(private val onShakeListener: () -> Unit) : SensorEventListen
 
     companion object {
         // Aceleración lineal en m/s², después de retirar la gravedad del dispositivo.
-        private const val SHAKE_THRESHOLD_MPS2 = 13.0f
-        private const val MIN_PEAK_INTERVAL_MS = 130L
-        private const val MAX_PEAK_INTERVAL_MS = 650L
-        private const val MAX_SEQUENCE_DURATION_MS = 1800L
-        // Cuatro picos alternos representan dos vaivenes deliberados.
-        private const val REQUIRED_ALTERNATING_PEAKS = 4
+        // Calibrado a 9.5 m/s²: sensible a sacudidas firmes sin requerir fuerza extrema,
+        // pero por encima del rebote típico de correr o caminar (~4-7 m/s²).
+        private const val SHAKE_THRESHOLD_MPS2 = 9.5f
+        private const val MIN_PEAK_INTERVAL_MS = 110L
+        private const val MAX_PEAK_INTERVAL_MS = 750L
+        private const val MAX_SEQUENCE_DURATION_MS = 2200L
+        // 3 picos alternos (ida-vuelta-ida) en el mismo eje: deliberado, rápido y natural.
+        private const val REQUIRED_ALTERNATING_PEAKS = 3
         private const val GRAVITY_FILTER_ALPHA = 0.8f
     }
 
