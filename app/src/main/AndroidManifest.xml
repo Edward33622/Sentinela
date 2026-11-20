@@ -73,6 +73,11 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".views.CopilotoIaActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".views.ConfiguracionActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Sentinela.Grouped" />
